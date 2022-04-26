@@ -51,10 +51,10 @@ provider:
 #    variable1: value1
 
 # you can add packaging information here
-#package:
-#  patterns:
+package:
+  patterns:
 #    - '!exclude-me.py'
-#    - '!exclude-me-dir/**'
+    - '!node_modules//**'
 #    - include-me.py
 #    - include-me-dir/**
 
