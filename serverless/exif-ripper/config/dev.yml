@@ -1,2 +1,4 @@
 awsRegion: "eu-west-1"
 deploymentBucket: "serverless-deployment-holder-658fi8r7"
+bucketA: "genomics-source-vkjhf87tg89t9fi"
+bucketB: "genomics-destination-servkjhf87tg89t9fi"

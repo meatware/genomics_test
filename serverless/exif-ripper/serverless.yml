@@ -16,9 +16,12 @@ service: exif-ripper
 plugins:
   - serverless-python-requirements
   - serverless-stack-output
+
 custom:
   defaultStage: dev
   currentStage: ${opt:stage, self:custom.defaultStage}
+  bucketA: ${file(./config/${self:custom.currentStage}.yml):bucketA}
+  bucketB: ${file(./config/${self:custom.currentStage}.yml):bucketB}
   deploymentBucket: ${file(./config/${self:custom.currentStage}.yml):deploymentBucket}
   pythonRequirements:
     dockerizePip: true
@@ -34,39 +37,55 @@ provider:
   region: eu-west-1
   deploymentBucket: ${self:custom.deploymentBucket}
 
+
+
   # you can add statements to the Lambda function's IAM Role here
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "s3:ListBucket"
-      Resource: "arn:aws:s3:::${self:custom.deploymentBucket}/*" 
+      Resource: 
+        - "arn:aws:s3:::${self:custom.deploymentBucket}/*" 
+        - "arn:aws:s3:::${self:custom.bucketA}/*" 
+        - "arn:aws:s3:::${self:custom.bucketB}/*" 
     - Effect: "Allow"
       Action:
         - "s3:PutObject"
       Resource:
-        "arn:aws:s3:::${self:custom.deploymentBucket}/*"
+        - "arn:aws:s3:::${self:custom.deploymentBucket}/*"
+        - "arn:aws:s3:::${self:custom.bucketB}/*" 
 
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
 
 # you can add packaging information here
-package:
-  patterns:
+#package:
+#  patterns:
 #    - '!exclude-me.py'
-    - '!node_modules//**'
+#    - '!node_modules//**'
 #    - include-me.py
 #    - include-me-dir/**
+
+package:
+  individually: true
+  exclude:
+    - ".*/**"
+  include:
+    - exif.py
 
 functions:
   exif:
     handler: exif.handler
     events:
       - s3:
-          bucket: photos-76fiukyg875r832ed23des
+          bucket: ${self:custom.bucketA}
           event: s3:ObjectCreated:*
           rules:
+            - prefix: incoming
             - suffix: .jpg
+          existing: true
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

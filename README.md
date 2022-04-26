@@ -32,5 +32,7 @@ awskeys export default
 cd serverless/exif-ripper
 serverless plugin install -n serverless-python-requirements
 serverless plugin install -n serverless-stack-output
+
+#
 serverless deploy --stage dev --region eu-west-1
 ```
