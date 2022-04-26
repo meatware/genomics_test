@@ -3,29 +3,31 @@ variable "bucket_name" {
   default = "serverless-deployment-holder-658fi8r7"
 }
 
+variable "tags" {
+  type = map(string)
+  default = { environment = "dev"
+    project    = "genomics"
+    owner      = "gtampi/devops"
+    created_by = "terraform"
+  }
+}
+
 module "s3_dbucket" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket = var.bucket_name
-  acl    = "private"
+  bucket                  = var.bucket_name
+  acl                     = "private"
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+
+  object_ownership = "BucketOwnerEnforced"
 
   versioning = {
     enabled = true
   }
 
+  tags = var.tags
 }
-
-# module "s3_bucket" {
-#   source = "cloudposse/s3-bucket/aws"
-#   # Cloud Posse recommends pinning every module to a specific version
-#   # version = "x.x.x"
-#   acl                      = "private"
-#   enabled                  = true
-#   user_enabled             = true
-#   versioning_enabled       = false
-#   allowed_bucket_actions   = ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"]
-#   name                     = var.bucket_name
-#   stage                    = "dev"
-#   namespace                = "genomics"
-# }
