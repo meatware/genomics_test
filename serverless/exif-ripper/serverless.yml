@@ -70,7 +70,7 @@ provider:
 package:
   individually: true
   exclude:
-    - ".*/**"
+    - "*/**"
   include:
     - exif.py
 

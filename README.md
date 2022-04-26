@@ -21,14 +21,17 @@ ln -fs ~/sys_bashrc/_bashrc ~/.bashrc
 source ~/.bashrc
 ```
 
-# use awskeys command to easily export aws key as env variables
+## use awskeys command to easily export aws key as env variables with sys_bashrc
+
+```
 awskeys help
 awskeys list
 awskeys export default
-
-## Serverless deploy
 ```
 
+## Serverless deploy
+
+```
 cd serverless/exif-ripper
 serverless plugin install -n serverless-python-requirements
 serverless plugin install -n serverless-stack-output
