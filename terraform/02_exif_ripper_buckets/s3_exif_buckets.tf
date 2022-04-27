@@ -1,22 +1,3 @@
-variable "bucket_source" {
-  type    = string
-  default = "genomics-source-vkjhf87tg89t9fi"
-}
-
-variable "bucket_dest" {
-  type    = string
-  default = "genomics-destination-vkjhf87tg89t9fi"
-}
-
-variable "tags" {
-  type = map(string)
-  default = { environment = "dev"
-    project    = "genomics"
-    owner      = "gtampi/devops"
-    created_by = "terraform"
-  }
-}
-
 module "s3_bucket_a" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
