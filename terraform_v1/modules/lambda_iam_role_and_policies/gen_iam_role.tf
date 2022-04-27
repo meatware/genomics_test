@@ -1,17 +1,3 @@
-variable "env" {
-  type    = string
-  default = "dev"
-}
-
-variable "tags" {
-  type = map(string)
-  default = { environment = "dev"
-    project    = "genomics"
-    owner      = "gtampi/devops"
-    created_by = "terraform"
-  }
-}
-
 locals {
   lambda_role_name = "exif-ripper-${var.env}-eu-west-1-lambdaRole"
 }
@@ -39,12 +25,7 @@ resource "aws_iam_role" "lambda_role" {
 
   lifecycle {
     create_before_destroy = true
-  }  
+  }
 
   tags = merge({ Name = local.lambda_role_name }, var.tags)
-}
-
-output "iam_role_arn" {
-  description = "Lambda IAM role arn used for serverless function"
-  value = aws_iam_role.lambda_role.arn
 }

@@ -11,6 +11,8 @@ module "s3_bucket_source" {
 
   object_ownership = "BucketOwnerEnforced"
 
+  force_destroy = true
+
   versioning = {
     enabled = true
   }
@@ -31,6 +33,8 @@ module "s3_bucket_dest" {
   restrict_public_buckets = true
 
   object_ownership = "BucketOwnerEnforced"
+
+  force_destroy = true
 
   versioning = {
     enabled = true

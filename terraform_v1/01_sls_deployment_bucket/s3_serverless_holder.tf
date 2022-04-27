@@ -25,6 +25,8 @@ module "s3_serverless_deployment_bucket" {
 
   object_ownership = "BucketOwnerEnforced"
 
+  force_destroy = true
+
   versioning = {
     enabled = true
   }

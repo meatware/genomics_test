@@ -18,14 +18,14 @@ resource "aws_iam_role_policy" "test_policy" {
           "s3:PutObjectAcl"
         ],
         "Resource" : [
-          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-dev-exif",
-          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-dev*:*",
-          "arn:aws:s3:::genomics-source-vkjhf87tg89t9fi",
-          "arn:aws:s3:::genomics-destination-vkjhf87tg89t9fi",
+          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}-exif",
+          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}*:*",
+          "arn:aws:s3:::${var.bucket_source}",
+          "arn:aws:s3:::${var.bucket_dest}",
           "arn:aws:s3:::serverless-deployment-holder-658fi8r7",
           "arn:aws:s3:::serverless-deployment-holder-658fi8r7/*",
-          "arn:aws:s3:::genomics-source-vkjhf87tg89t9fi/*",
-          "arn:aws:s3:::genomics-destination-vkjhf87tg89t9fi/*"
+          "arn:aws:s3:::${var.bucket_source}/*",
+          "arn:aws:s3:::${var.bucket_dest}/*"
         ]
       },
       {
@@ -38,10 +38,9 @@ resource "aws_iam_role_policy" "test_policy" {
           "logs:PutLogEvents"
         ],
         "Resource" : [
-          "*"
-          # "arn:aws:ssm:eu-west-1:779934699932:parameter//genomics/exif-ripper/dev/*",
-          # "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-dev-exif:log-stream:*",
-          # "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-dev*:*:*"
+          "arn:aws:ssm:eu-west-1:779934699932:parameter${var.ssm_root_path}/${var.env}/*",
+          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}-exif:log-stream:*",
+          "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}*:*:*"
         ]
       }
     ]
@@ -49,6 +48,6 @@ resource "aws_iam_role_policy" "test_policy" {
 
   lifecycle {
     create_before_destroy = true
-  }  
+  }
 }
 
