@@ -1,4 +1,7 @@
-awsRegion: "eu-west-1"
-deploymentBucket: "serverless-deployment-holder-658fi8r7"
-bucketA: "genomics-source-vkjhf87tg89t9fi"
-bucketB: "genomics-destination-servkjhf87tg89t9fi"
+# pls pass rolearn via_cli to keep dynamic arn up to date
+# serverless deploy --stage dev --region eu-west-1 --param="rolearn=arn:aws:iam::889934699932:role/lambda/dev/exif-ripper-dev-eu-west-1-lambdaRole20220427180337074400000001"
+aws_region: eu-west-1
+deployment_bucket: serverless-deployment-holder-658fi8r7
+stage: dev
+iam_role_arn: arn:aws:iam::779934699932:role/lambda/dev/exif-ripper-dev-eu-west-1-lambdaRole20220427180337074400000001
+ssm_root_path: /genomics/exifripper

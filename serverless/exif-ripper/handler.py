@@ -15,13 +15,26 @@ from boto3_helpers import boto_session, try_except_status, check_bucket_exists
 from PIL import Image
 
 LOG = logging.getLogger()
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
+
+def safeget(dct, *keys):
+    """
+    Recover value safely from nested dictionary
+    
+    safeget(example_dict, 'key1', 'key2')
+    """
+    for key in keys:
+        try:
+            dct = dct[key]
+        except KeyError:
+            return None
+    return dct
 
 def read_img_2memory(get_obj_resp):
     """
     Read image to memory as binary.
     """
-    file_stream = response["Body"]
+    file_stream = get_obj_resp["Body"]
     img_binary = ExifImage(file_stream)
     return img_binary
 
@@ -36,6 +49,8 @@ def log_image_data(img, label):
     return exif_data_list
 
 
+# TODO: put this into a class
+# TODO: split the logic out to seperate concerns
 def exifripper(event, context):
     """
     Main lambda entrypoint & logic.
@@ -44,65 +59,74 @@ def exifripper(event, context):
 
     LOG.info("event: <%s> - <%s>", type(event), event)
 
+    ### Setup boto3
+    bo3_session = boto_session()
+    s3_client = bo3_session.client("s3")
+    
 
+    ### read env vars
+    bucket_env_list = (os.getenv("bucketSource"), os.getenv("bucketDest"))
+    bucket_source, bucket_dest = bucket_env_list
 
-    # sys.exit(42)
-
-    # ### Setup boto3
-    # bo3_session = boto_session()
-    # s3_client = bo3_session.client("s3")
-    # #
-    source_bucket = "genomics-source-vkjhf87tg89t9fi"
-    dest_bucket = "genomics-destination-vkjhf87tg89t9fi"
-    object_key =  event["Records"][0]["s3"]["object"]["key"]  #"incoming/sls_test_img1.jpg"
+    ### Sanity check
+    if None in bucket_env_list:
+        LOG.critical("env vars are unset in bucket_env_list: <%s>", bucket_env_list)
+        sys.exit(42)
+    
+    for s3_buck in [bucket_source, bucket_dest]:
+        check_bucket_exists(bucket_name=s3_buck)
+        
+    record_list = event.get("Records")
+    object_key =  safeget(record_list[0], "s3", "object", "key")
     LOG.info("object_key: <%s>", object_key)
+    if object_key is None:
+        LOG.critical("object_key not set. Exiting")
+        sys.exit(42)
 
-    # ### Sanity check
-    # for s3_buck in [source_bucket, dest_bucket]:
-    #     check_bucket_exists(bucket_name=s3_buck)
+    ### Process new uploaded image file
+    response = s3_client.get_object(Bucket=bucket_source, Key=object_key)
+    LOG.info("response: %s", response)
 
-    # response = s3_client.get_object(Bucket=source_bucket, Key=object_key)
-    # LOG.info("response: %s", response)
+    my_image = read_img_2memory(get_obj_resp=response)
+    log_image_data(img=my_image, label="exif data pass0")
 
-    # my_image = read_img_2memory(get_obj_resp=response)
-    # log_image_data(img=my_image, label="exif data pass0")
+    ### initial exif data delete
+    my_image.delete_all()
 
-    # ### initial exif data delete
-    # my_image.delete_all()
+    exif_data_list = log_image_data(img=my_image, label="exif data pass1")
 
-    # exif_data_list = log_image_data(img=my_image, label="exif data pass1")
+    ### Mop any exif data that failed to delete with delete_all
+    if len(exif_data_list) > 0:
+        for exif_tag in exif_data_list:
+            my_image.delete(exif_tag)
+        log_image_data(img=my_image, label="exif data pass2")
 
-    # ### Mop any exif data that failed to delete with delete_all
-    # if len(exif_data_list) > 0:
-    #     for exif_tag in exif_data_list:
-    #         my_image.delete(exif_tag)
-    #     log_image_data(img=my_image, label="exif data pass2")
+    ### Copy image with sanitised exif data to destination bucket
+    s3cp_status = try_except_status(
+        partial(
+            s3_client.put_object,
+            ACL="bucket-owner-full-control",
+            Body=my_image.get_file(),
+            Bucket=bucket_dest,
+            Key=object_key,
+        ),
+        fail_str="S3 object failed to copy",
+    )
 
-    # ### Copy image with sanitised exif data to destination bucket
-    # s3cp_status = try_except_status(
-    #     partial(
-    #         s3_client.put_object,
-    #         ACL="bucket-owner-full-control",
-    #         Body=my_image.get_file(),
-    #         Bucket=dest_bucket,
-    #         Key=object_key,
-    #     ),
-    #     fail_str="S3 object failked to copy",
-    # )
+    ### Final exit
+    if s3cp_status != 200:
+        LOG.info(
+            "FAILED to copy s3 object <%s> from <%s> to <%s>",
+            object_key,
+            bucket_source,
+            bucket_dest,
+        )
+        sys.exit(42)
 
-    # ### Final exit
-    # if s3cp_status == 200:
-    #     LOG.info(
-    #         "SUCCESS Copying s3 object <%s> from <%s> to <%s>",
-    #         object_key,
-    #         source_bucket,
-    #         dest_bucket,
-    #     )
-    #     sys.exit(0)
-
-    # LOG.info(
-    #     "FAILED to copy s3 object <%s> from <%s> to <%s>",
-    #     object_key,
-    #     source_bucket,
-    #     dest_bucket,
-    # )
+    LOG.info(
+        "SUCCESS Copying s3 object <%s> from <%s> to <%s>",
+        object_key,
+        bucket_source,
+        bucket_dest,
+    )
+    

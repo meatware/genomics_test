@@ -12,7 +12,7 @@ variable "tags" {
   }
 }
 
-module "s3_dbucket" {
+module "s3_serverless_deployment_bucket" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
 

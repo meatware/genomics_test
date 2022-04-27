@@ -1,11 +1,22 @@
+variable "env" {
+  type    = string
+  default = "dev"
+}
+
+variable "random_string" {
+  type    = string
+  default = "vkjhf87tg89t9fi"
+}
+
+
 variable "bucket_source" {
   type    = string
-  default = "genomics-source-vkjhf87tg89t9fi"
+  default = "genomics-source"
 }
 
 variable "bucket_dest" {
   type    = string
-  default = "genomics-destination-vkjhf87tg89t9fi"
+  default = "genomics-destination"
 }
 
 variable "tags" {
@@ -19,5 +30,5 @@ variable "tags" {
 
 variable "ssm_root_path" {
   type    = string
-  default = "/genomics/exif-ripper"
+  default = "/genomics/exifripper"
 }

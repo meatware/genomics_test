@@ -1,8 +1,8 @@
-module "s3_bucket_a" {
+module "s3_bucket_source" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket                  = var.bucket_source
+  bucket                  = local.bucket_source_name
   acl                     = "private"
   block_public_acls       = true
   block_public_policy     = true
@@ -19,11 +19,11 @@ module "s3_bucket_a" {
 }
 
 
-module "s3_bucket_b" {
+module "s3_bucket_dest" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket                  = var.bucket_dest
+  bucket                  = local.bucket_dest_name
   acl                     = "private"
   block_public_acls       = true
   block_public_policy     = true
@@ -38,3 +38,4 @@ module "s3_bucket_b" {
 
   tags = var.tags
 }
+

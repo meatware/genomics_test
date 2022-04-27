@@ -17,13 +17,9 @@ def boto_session():
     LOG.debug("Setting up Boto3 session")
 
     aws_region = os.environ.get("AWS_REGION")
-    aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
     session = boto3.Session(
-        region_name=aws_region,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
+        region_name=aws_region
     )
     return session
 
@@ -38,7 +34,7 @@ def check_bucket_exists(bucket_name):
         LOG.info("Verified bucket %s exists", bucket_name)
     except ClientError:
         LOG.critical("s3 bucket %s does not exist or access denied", bucket_name)
-        sys.exit(0)
+        sys.exit(42)
 
 
 def try_except_status(bo3_client_method, fail_str=None):

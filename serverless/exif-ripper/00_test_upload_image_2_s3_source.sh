@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# usage: ./00_test_upload_image_2_s3_source.sh default genomics-source-vkjhf87tg89t9fi
+# usage: ./00_test_upload_image_2_s3_source.sh default genomics-source-dev-vkjhf87tg89t9fi
 
 set -e
 

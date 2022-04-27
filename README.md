@@ -24,6 +24,7 @@ source ~/.bashrc
 ## use awskeys command to easily export aws key as env variables with sys_bashrc
 
 ```
+csp1
 awskeys help
 awskeys list
 awskeys export default
@@ -35,7 +36,10 @@ awskeys export default
 cd serverless/exif-ripper
 serverless plugin install -n serverless-python-requirements
 serverless plugin install -n serverless-stack-output
-
+serverless plugin install --name serverless-ssm-fetch
 #
 serverless deploy --stage dev --region eu-west-1
 ```
+
+
+./00_test_upload_image_2_s3_source.sh default genomics-source-vkjhf87tg89t9fi

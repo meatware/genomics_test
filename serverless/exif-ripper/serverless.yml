@@ -3,54 +3,35 @@ service: exif-ripper
 plugins:
   - serverless-python-requirements
   - serverless-stack-output
+  - serverless-ssm-fetch
 
 custom:
   defaultStage: dev
   currentStage: ${opt:stage, self:custom.defaultStage}
-  bucketA: ${file(./config/${self:custom.currentStage}.yml):bucketA}
-  bucketB: ${file(./config/${self:custom.currentStage}.yml):bucketB}
-  deploymentBucket: ${file(./config/${self:custom.currentStage}.yml):deploymentBucket}
+  awsRegion: ${file(./config/${self:custom.currentStage}.yml):aws_region}
+  iamRoleArnFromFile: ${file(./config/${self:custom.currentStage}.yml):iam_role_arn}
+  iamRoleArn: ${param:rolearn, self:custom.iamRoleArnFromFile}
+  ssm_root_path: ${file(./config/${self:custom.currentStage}.yml):ssm_root_path}
+  deploymentBucket: ${file(./config/${self:custom.currentStage}.yml):deployment_bucket}
+  bucketSourceSsmKey: "${self:custom.ssm_root_path}/${self:custom.currentStage}/bucketsource"
+  serverlessSsmFetch:
+    bucketSource: "${self:custom.bucketSourceSsmKey}"  
+    bucketDest: "${self:custom.ssm_root_path}/${self:custom.currentStage}/bucketdest" 
   pythonRequirements:
     dockerizePip: true
 
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
 frameworkVersion: '3'
 
 provider:
   name: aws
   runtime: python3.8
-  stage: dev
-  region: eu-west-1
+  stage: ${self:custom.currentStage}
+  region: ${self:custom.awsRegion}
   deploymentBucket: ${self:custom.deploymentBucket}
+  role: ${self:custom.iamRoleArn}
 
-  # you can add statements to the Lambda function's IAM Role here
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "s3:ListBucket"
-      Resource: 
-        - "arn:aws:s3:::${self:custom.deploymentBucket}/*" 
-        - "arn:aws:s3:::${self:custom.bucketA}/*" 
-        - "arn:aws:s3:::${self:custom.bucketB}/*" 
-    - Effect: "Allow"
-      Action:
-        - "s3:PutObject"
-      Resource:
-        - "arn:aws:s3:::${self:custom.deploymentBucket}/*"
-        - "arn:aws:s3:::${self:custom.bucketB}/*" 
+environment:
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  patterns:
-#    - '!exclude-me.py'
-#    - '!node_modules//**'
-#    - include-me.py
-#    - include-me-dir/**
 
 package:
   individually: true
@@ -66,6 +47,9 @@ package:
 functions:
   exif:
     handler: handler.exifripper
+    ssmToEnvironment:
+      - bucketSource
+      - bucketDest    
     package:
       individually: true
       exclude:
@@ -78,61 +62,9 @@ functions:
         - __init__.py    
     events:
       - s3:
-          bucket: ${self:custom.bucketA}
+          bucket: ${ssm:${self:custom.bucketSourceSsmKey}}
           event: s3:ObjectCreated:*
           rules:
             - prefix: incoming
             - suffix: .jpg
           existing: true
-
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - httpApi:
-#          path: /users/create
-#          method: get
-#      - websocket: $connect
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
-#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
-#      - alb:
-#          listenerArn: arn:aws:elasticloadbalancing:us-east-1:XXXXXX:listener/app/my-load-balancer/50dc6c495c0c9188/
-#          priority: 1
-#          conditions:
-#            host: example.com
-#            path: /hello
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
