@@ -34,5 +34,11 @@ No resources.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_bucket_dest_name"></a> [bucket\_dest\_name](#output\_bucket\_dest\_name) | exif-ripper s3 destination bucket name |
+| <a name="output_bucket_source_name"></a> [bucket\_source\_name](#output\_bucket\_source\_name) | exif-ripper s3 source bucket name |
+| <a name="output_iam_exif_s3_rob_id"></a> [iam\_exif\_s3\_rob\_id](#output\_iam\_exif\_s3\_rob\_id) | user B RI IAM access secret |
+| <a name="output_iam_exif_s3_rob_secret"></a> [iam\_exif\_s3\_rob\_secret](#output\_iam\_exif\_s3\_rob\_secret) | n/a |
+| <a name="output_iam_exif_s3_rwa_id"></a> [iam\_exif\_s3\_rwa\_id](#output\_iam\_exif\_s3\_rwa\_id) | user A RW IAM access id |
+| <a name="output_iam_exif_s3_rwa_secret"></a> [iam\_exif\_s3\_rwa\_secret](#output\_iam\_exif\_s3\_rwa\_secret) | user A RW IAM access secret |
 | <a name="output_iam_role_arn"></a> [iam\_role\_arn](#output\_iam\_role\_arn) | Lambda IAM role arn used for serverless function |
 <!-- END_TF_DOCS -->

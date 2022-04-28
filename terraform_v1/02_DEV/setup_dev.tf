@@ -37,8 +37,8 @@ module "lambda_role_and_policies" {
 module "iam_exif_users" {
   source = "../modules/iam_exif_users"
 
-  env          = var.env
-  tags         = local.tags
+  env  = var.env
+  tags = local.tags
   # ro_user_list = ["user_b"]
   # rw_user_list = ["user_a"]
   bucket_source = module.exif_buckets.bucket_source_name

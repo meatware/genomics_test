@@ -1,19 +1,23 @@
 output "iam_exif_s3_rwa_id" {
-  sensitive = true
-  value = aws_iam_access_key.exif_s3_rwa.id
+  description = "user A RW IAM access id"
+  sensitive   = true
+  value       = module.iam_exif_users.iam_exif_s3_rwa_id
 }
 
 output "iam_exif_s3_rwa_secret" {
-  sensitive = true
-  value = aws_iam_access_key.exif_s3_rwa.secret
+  description = "user A RW IAM access secret"
+  sensitive   = true
+  value       = module.iam_exif_users.iam_exif_s3_rwa_secret
 }
 #
 output "iam_exif_s3_rob_id" {
-  sensitive = true
-  value = aws_iam_access_key.exif_s3_rob.id
+  description = "user B RO IAM access id"
+  sensitive   = true
+  value       = module.iam_exif_users.iam_exif_s3_rob_id
 }
 
 output "iam_exif_s3_rob_secret" {
-  sensitive = true
-  value = aws_iam_access_key.exif_s3_rob.secret
+  description = "user B RO IAM access secret"
+  sensitive   = true
+  value       = module.iam_exif_users.iam_exif_s3_rob_secret
 }
