@@ -4,6 +4,12 @@
 
 set -e
 
+if [ "$#" -ne 2 ]; then
+    echo "USAGE: ./00_test_upload_image_2_s3_source.sh \${YOUR_AWS_PROFILE_NAME} \${YOUR_UNIQUE_RANDOM_STRING}"
+    echo "./00_test_upload_image_2_s3_source.sh default genomics-source-dev-z0b3ly"
+    exit 0
+fi
+
 AWS_PROFILE=$1
 SOURCE_BUCKET=$2
 

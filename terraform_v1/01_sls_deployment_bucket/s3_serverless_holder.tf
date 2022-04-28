@@ -1,6 +1,10 @@
-variable "bucket_name" {
+variable "random_string" {
   type    = string
-  default = "serverless-deployment-holder-658fi8r7"
+}
+
+variable "env" {
+  type    = string
+  default = "dev"
 }
 
 variable "tags" {
@@ -12,11 +16,15 @@ variable "tags" {
   }
 }
 
+locals {
+  bucket_name =  "serverless-deployment-holder-${var.env}-${var.random_string}"
+}
+
 module "s3_serverless_deployment_bucket" {
 
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket                  = var.bucket_name
+  bucket                  = local.bucket_name
   acl                     = "private"
   block_public_acls       = true
   block_public_policy     = true

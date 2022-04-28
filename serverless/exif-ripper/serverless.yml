@@ -12,7 +12,8 @@ custom:
   iamRoleArnFromFile: ${file(./config/${self:custom.currentStage}.yml):iam_role_arn}
   iamRoleArn: ${param:rolearn, self:custom.iamRoleArnFromFile}
   ssm_root_path: ${file(./config/${self:custom.currentStage}.yml):ssm_root_path}
-  deploymentBucket: ${file(./config/${self:custom.currentStage}.yml):deployment_bucket}
+  deploymentBucketFromFile: ${file(./config/${self:custom.currentStage}.yml):deployment_bucket}
+  deploymentBucket: ${param:dbuck, self:custom.deploymentBucketFromFile}
   bucketSourceSsmKey: "${self:custom.ssm_root_path}/${self:custom.currentStage}/bucketsource"
   serverlessSsmFetch:
     bucketSource: "${self:custom.bucketSourceSsmKey}"  

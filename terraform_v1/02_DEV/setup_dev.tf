@@ -3,6 +3,10 @@ variable "env" {
   default = "dev"
 }
 
+variable "random_string" {
+  type    = string
+}
+
 variable "ssm_root_path" {
   type    = string
   default = "/genomics/exifripper"
@@ -22,7 +26,7 @@ module "exif_buckets" {
   source = "../modules/exif_ripper_buckets"
 
   env           = var.env
-  random_string = "vkjhf87tg89t9fi"
+  random_string = var.random_string
   bucket_source = "genomics-source"
   bucket_dest   = "genomics-destination"
 
