@@ -1,5 +1,5 @@
 variable "random_string" {
-  type    = string
+  type = string
 }
 
 variable "env" {
@@ -17,7 +17,7 @@ variable "tags" {
 }
 
 locals {
-  bucket_name =  "serverless-deployment-holder-${var.env}-${var.random_string}"
+  bucket_name = "serverless-deployment-holder-${var.env}-${var.random_string}"
 }
 
 module "s3_serverless_deployment_bucket" {

@@ -4,7 +4,7 @@ variable "env" {
 }
 
 variable "random_string" {
-  type    = string
+  type = string
 }
 
 variable "ssm_root_path" {
