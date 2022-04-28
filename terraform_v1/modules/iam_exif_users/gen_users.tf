@@ -1,10 +1,4 @@
-# locals {
-#   all_users = toset(concat(var.ro_user_list, var.rw_user_list))
-# }
-
 resource "aws_iam_user" "exif_s3_rwa" {
-
-  #for_each = length(local.all_users) > 0 ? local.all_users : []
 
   name = "user_a_rwa"
   path = "/users/exifripper/${var.env}/"
@@ -13,8 +7,6 @@ resource "aws_iam_user" "exif_s3_rwa" {
 }
 
 resource "aws_iam_user" "exif_s3_rob" {
-
-  #for_each = length(local.all_users) > 0 ? local.all_users : []
 
   name = "user_b_rob"
   path = "/users/exifripper/${var.env}/"
@@ -115,14 +107,3 @@ resource "aws_iam_user_policy" "exif_s3_rob" {
     ]
   })
 }
-
-# ######################################################
-# resource "aws_iam_user_policy_attachment" "attach_rwa" {
-#   user       = aws_iam_user.exif_s3_rwa.name
-#   policy_arn = aws_iam_policy.exif_s3_rwa.arn
-# }
-
-# resource "aws_iam_user_policy_attachment" "attach_rob" {
-#   user       = aws_iam_user.exif_s3_rob.name
-#   policy_arn = aws_iam_policy.exif_s3_rob.arn
-# }

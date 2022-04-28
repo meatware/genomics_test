@@ -39,8 +39,7 @@ module "iam_exif_users" {
 
   env  = var.env
   tags = local.tags
-  # ro_user_list = ["user_b"]
-  # rw_user_list = ["user_a"]
+
   bucket_source = module.exif_buckets.bucket_source_name
   bucket_dest   = module.exif_buckets.bucket_dest_name
 
