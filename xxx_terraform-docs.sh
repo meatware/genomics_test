@@ -2,8 +2,12 @@
 
 set -e
 
-echo "!!! Plaese ensure you have terraform-docs on your path !!!"
-echo -e "https://github.com/terraform-docs/terraform-docs\n"
+if ! command -v terraform-docs &> /dev/null
+    then
+    echo "!!! Plaese ensure you have terraform-docs installed & on your path !!!"
+    echo -e "https://github.com/terraform-docs/terraform-docs\n"
+    exit 42
+fi
 
 if [ "$#" -ne 1 ]; then
     echo "USAGE: ./xxx_terraform-docs.sh \${YOUR_TERRAFORM_EXEC}"

@@ -33,12 +33,14 @@ module "lambda_role_and_policies" {
   ssm_root_prefix = var.ssm_root_prefix
 }
 
+# TODO: make this module able to assign any number of users arbitrary bucket permssions
 module "iam_exif_users" {
   source = "../modules/iam_exif_users"
 
-  env          = var.env
-  tags         = local.tags
-  ro_user_list = ["user_b"]
-  rw_user_list = ["user_a"]
+  env  = var.env
+  tags = local.tags
+
+  bucket_source = module.exif_buckets.bucket_source_name
+  bucket_dest   = module.exif_buckets.bucket_dest_name
 
 }
