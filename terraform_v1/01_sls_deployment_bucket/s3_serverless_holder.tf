@@ -1,23 +1,12 @@
-variable "random_string" {
-  type    = string
-}
-
-variable "env" {
-  type    = string
-  default = "dev"
-}
-
-variable "tags" {
-  type = map(string)
-  default = { environment = "dev"
-    project    = "genomics"
-    owner      = "gtampi/devops"
-    created_by = "terraform"
-  }
-}
-
 locals {
-  bucket_name =  "serverless-deployment-holder-${var.env}-${var.random_string}"
+  tags = {
+    environment = var.env
+    project     = "genomics"
+    owner       = "gtampi/devops"
+    created_by  = "terraform"
+  }
+
+  bucket_name = "serverless-deployment-holder-${var.env}-${var.random_string}"
 }
 
 module "s3_serverless_deployment_bucket" {
@@ -39,5 +28,5 @@ module "s3_serverless_deployment_bucket" {
     enabled = true
   }
 
-  tags = var.tags
+  tags = local.tags
 }

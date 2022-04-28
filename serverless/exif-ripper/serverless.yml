@@ -11,13 +11,13 @@ custom:
   awsRegion: ${file(./config/${self:custom.currentStage}.yml):aws_region}
   iamRoleArnFromFile: ${file(./config/${self:custom.currentStage}.yml):iam_role_arn}
   iamRoleArn: ${param:rolearn, self:custom.iamRoleArnFromFile}
-  ssm_root_path: ${file(./config/${self:custom.currentStage}.yml):ssm_root_path}
+  ssm_root_prefix: ${file(./config/${self:custom.currentStage}.yml):ssm_root_prefix}
   deploymentBucketFromFile: ${file(./config/${self:custom.currentStage}.yml):deployment_bucket}
   deploymentBucket: ${param:dbuck, self:custom.deploymentBucketFromFile}
-  bucketSourceSsmKey: "${self:custom.ssm_root_path}/${self:custom.currentStage}/bucketsource"
+  bucketSourceSsmKey: "${self:custom.ssm_root_prefix}/${self:custom.currentStage}/bucketsource"
   serverlessSsmFetch:
     bucketSource: "${self:custom.bucketSourceSsmKey}"  
-    bucketDest: "${self:custom.ssm_root_path}/${self:custom.currentStage}/bucketdest" 
+    bucketDest: "${self:custom.ssm_root_prefix}/${self:custom.currentStage}/bucketdest" 
   pythonRequirements:
     dockerizePip: true
 

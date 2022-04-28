@@ -18,9 +18,7 @@ def boto_session():
 
     aws_region = os.environ.get("AWS_REGION")
 
-    session = boto3.Session(
-        region_name=aws_region
-    )
+    session = boto3.Session(region_name=aws_region)
     return session
 
 

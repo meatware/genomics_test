@@ -27,7 +27,7 @@ trap 'trap_debugger ${LINENO}' ERR
 
 if [ "$#" -ne 2 ]; then
     echo "USAGE: ./xxx_pipeline_destroy.sh \${YOUR_TERRAFORM_EXEC} \${YOUR_UNIQUE_RANDOM_STRING}"
-    echo "./xxx_pipeline_destroy.sh terraform_v1.0.6 z0b3ly"
+    echo "e.g > ./xxx_pipeline_destroy.sh terraform_v1.0.6 z0b3ly"
     exit 0
 fi
 

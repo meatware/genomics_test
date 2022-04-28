@@ -1,17 +1,3 @@
-variable "env" {
-  type    = string
-  default = "dev"
-}
-
-variable "random_string" {
-  type    = string
-}
-
-variable "ssm_root_path" {
-  type    = string
-  default = "/genomics/exifripper"
-}
-
 locals {
   tags = {
     environment = var.env
@@ -19,7 +5,6 @@ locals {
     owner       = "gtampi/devops"
     created_by  = "terraform"
   }
-
 }
 
 module "exif_buckets" {
@@ -32,7 +17,7 @@ module "exif_buckets" {
 
   tags = local.tags
 
-  ssm_root_path = var.ssm_root_path
+  ssm_root_prefix = var.ssm_root_prefix
 
 }
 
@@ -45,7 +30,7 @@ module "lambda_role_and_policies" {
 
   tags = local.tags
 
-  ssm_root_path = var.ssm_root_path
+  ssm_root_prefix = var.ssm_root_prefix
 }
 
 module "iam_exif_users" {
