@@ -1,24 +1,30 @@
 variable "env" {
-  type = string
+  description = "Deployment environment. e.g. dev, uat, prod"
+  type        = string
 }
 
 variable "random_string" {
-  type = string
+  description = "A random string to ensure that different people can create uniuque s3 resources"
+  type        = string
 }
 
 
 variable "bucket_source" {
-  type = string
+  description = "Exif-ripper source bucket that is monitored for new files"
+  type        = string
 }
 
 variable "bucket_dest" {
-  type = string
+  description = "Exif-ripper destination bucket that sanitised files are copied to"
+  type        = string
+}
+
+variable "ssm_root_prefix" {
+  description = "SSM root prefix used to construct the key path"
+  type        = string
 }
 
 variable "tags" {
-  type = map(string)
-}
-
-variable "ssm_root_path" {
-  type = string
+  description = "A map that is used to apply tags to resources created by terraform"
+  type        = map(string)
 }

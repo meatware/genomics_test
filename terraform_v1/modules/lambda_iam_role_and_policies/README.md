@@ -24,11 +24,11 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bucket_dest"></a> [bucket\_dest](#input\_bucket\_dest) | n/a | `string` | n/a | yes |
-| <a name="input_bucket_source"></a> [bucket\_source](#input\_bucket\_source) | n/a | `string` | n/a | yes |
-| <a name="input_env"></a> [env](#input\_env) | n/a | `string` | n/a | yes |
-| <a name="input_ssm_root_path"></a> [ssm\_root\_path](#input\_ssm\_root\_path) | n/a | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
+| <a name="input_bucket_dest"></a> [bucket\_dest](#input\_bucket\_dest) | Exif-ripper destination bucket that sanitised files are copied to | `string` | n/a | yes |
+| <a name="input_bucket_source"></a> [bucket\_source](#input\_bucket\_source) | Exif-ripper source bucket that is monitored for new files | `string` | n/a | yes |
+| <a name="input_env"></a> [env](#input\_env) | Deployment environment. e.g. dev, uat, prod | `string` | n/a | yes |
+| <a name="input_ssm_root_prefix"></a> [ssm\_root\_prefix](#input\_ssm\_root\_prefix) | SSM root prefix used to construct the key path | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map that is used to apply tags to resources created by terraform | `map(string)` | n/a | yes |
 
 ## Outputs
 

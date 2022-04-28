@@ -28,10 +28,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_env"></a> [env](#input\_env) | n/a | `string` | n/a | yes |
+| <a name="input_env"></a> [env](#input\_env) | Deployment environment. e.g. dev, uat, prod | `string` | n/a | yes |
 | <a name="input_ro_user_list"></a> [ro\_user\_list](#input\_ro\_user\_list) | n/a | `list(string)` | n/a | yes |
 | <a name="input_rw_user_list"></a> [rw\_user\_list](#input\_rw\_user\_list) | n/a | `list(string)` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map that is used to apply tags to resources created by terraform | `map(string)` | n/a | yes |
 
 ## Outputs
 

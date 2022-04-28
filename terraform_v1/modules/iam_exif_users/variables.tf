@@ -1,5 +1,6 @@
 variable "env" {
-  type = string
+  description = "Deployment environment. e.g. dev, uat, prod"
+  type        = string
 }
 
 variable "ro_user_list" {
@@ -15,5 +16,6 @@ variable "rw_user_list" {
 # }
 
 variable "tags" {
-  type = map(string)
+  description = "A map that is used to apply tags to resources created by terraform"
+  type        = map(string)
 }

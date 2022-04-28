@@ -24,9 +24,8 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_env"></a> [env](#input\_env) | n/a | `string` | `"dev"` | no |
-| <a name="input_random_string"></a> [random\_string](#input\_random\_string) | n/a | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | <pre>{<br>  "created_by": "terraform",<br>  "environment": "dev",<br>  "owner": "gtampi/devops",<br>  "project": "genomics"<br>}</pre> | no |
+| <a name="input_env"></a> [env](#input\_env) | Deployment environment. e.g. dev, uat, prod | `string` | `"dev"` | no |
+| <a name="input_random_string"></a> [random\_string](#input\_random\_string) | A random string to ensure that different people can create uniuque s3 resources | `string` | n/a | yes |
 
 ## Outputs
 

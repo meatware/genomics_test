@@ -6,7 +6,7 @@ locals {
 }
 
 resource "aws_ssm_parameter" "bucket_source" {
-  name  = "${var.ssm_root_path}/${var.env}/bucketsource"
+  name  = "${var.ssm_root_prefix}/${var.env}/bucketsource"
   type  = "String"
   value = local.bucket_source_name
 
@@ -14,7 +14,7 @@ resource "aws_ssm_parameter" "bucket_source" {
 }
 
 resource "aws_ssm_parameter" "bucket_dest" {
-  name  = "${var.ssm_root_path}/${var.env}/bucketdest"
+  name  = "${var.ssm_root_prefix}/${var.env}/bucketdest"
   type  = "String"
   value = local.bucket_dest_name
 

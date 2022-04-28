@@ -38,7 +38,7 @@ resource "aws_iam_role_policy" "test_policy" {
           "logs:PutLogEvents"
         ],
         "Resource" : [
-          "arn:aws:ssm:eu-west-1:779934699932:parameter${var.ssm_root_path}/${var.env}/*",
+          "arn:aws:ssm:eu-west-1:779934699932:parameter${var.ssm_root_prefix}/${var.env}/*",
           "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}-exif:log-stream:*",
           "arn:aws:logs:eu-west-1:779934699932:log-group:/aws/lambda/exif-ripper-${var.env}*:*:*"
         ]

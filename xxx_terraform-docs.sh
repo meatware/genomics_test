@@ -2,7 +2,7 @@
 
 set -e
 
-echo "!!! Plaese endurte you have terraform-docs on your path!!!"
+echo "!!! Plaese ensure you have terraform-docs on your path !!!"
 echo -e "https://github.com/terraform-docs/terraform-docs\n"
 
 if [ "$#" -ne 1 ]; then
