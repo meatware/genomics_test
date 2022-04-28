@@ -3,13 +3,23 @@ variable "env" {
   type        = string
 }
 
-variable "ro_user_list" {
-  type = list(string)
+variable "bucket_source" {
+  description = "Exif-ripper source bucket that is monitored for new files"
+  type        = string
 }
 
-variable "rw_user_list" {
-  type = list(string)
+variable "bucket_dest" {
+  description = "Exif-ripper destination bucket that sanitised files are copied to"
+  type        = string
 }
+
+# variable "ro_user_list" {
+#   type = list(string)
+# }
+
+# variable "rw_user_list" {
+#   type = list(string)
+# }
 
 # variable "user_maps" {
 #   type = map(map(string))
