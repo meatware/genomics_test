@@ -22,6 +22,9 @@ Sls is a better choice to deploy lambda functions, API Gateways, step functions,
 
 Two methods of deploying the Terraform code are included here. V2 is a dryer method that also uses a remote s3/dynamodb backend
 
+#### Serverless Function Overview
+Exif-Ripper is a serverless application that attaches an event triggering rule to "watch" a source s3 bucket for the upload of any jpg file. When this happens an AWS event invokes a lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory so does not inefficiently write the file to a scratch volume.
+
 #### Directory structure
 ```
 .
