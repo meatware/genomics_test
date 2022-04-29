@@ -158,7 +158,7 @@ awskeys export $YOUR_AWS_PROFILE
 
 ```
 ### Install packages
-sudo apt install eom jq unzip wget
+sudo apt install eog jq unzip wget
 
 ### Install latest aws cli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
