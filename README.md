@@ -22,7 +22,7 @@ Sls is a better choice to deploy lambda functions, API Gateways, step functions,
 
 Two methods of deploying the Terraform code are included here. V2 is a dryer method that also uses a remote s3/dynamodb backend
 
-##### Directory structure
+#### Directory structure
 ```
 .
 ├── Serverless
@@ -52,7 +52,7 @@ Two methods of deploying the Terraform code are included here. V2 is a dryer met
 
 ```
 
-##### Terraform_v1 does the following:
+#### Terraform_v1 does the following:
 1. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
 2. Creates source & destination s3 buckets for exif image processing
 3. Pushes the names of these buckets to SSM
@@ -72,7 +72,7 @@ Two methods of deploying the Terraform code are included here. V2 is a dryer met
 
 ```
 
-##### Terraform_v2 does the following:
+#### Terraform_v2 does the following:
 This version is included to illustrate a method that is more DRY than v1.
 1. Creates an s3/dynamodb backend and writes the backend config files to envs folder
 2. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
@@ -96,7 +96,7 @@ This version is included to illustrate a method that is more DRY than v1.
 ```
 
 
-##### The Serverless.yml does the following:
+#### The Serverless.yml does the following:
 1. Uses the Serverless deployment bucket created by Terraform
 2. Fetches ssm variables that have previously been pushed by the Terraform code: (source and destination buckets)
 3. Creates the trigger on the source bucket
@@ -119,7 +119,7 @@ As s3 buckets must be unique, a random string is used so that multiple people ca
 **All instructions are for Ubuntu 20.04 using BASH in a terminal, so your milage may vary if using a different system.**
 Several scripts have been included to assist getting this solution deployed. Please treat these scripts as additional documentation and give them a read.
 
-##### Install NVM, Node & Serverless
+#### Install NVM, Node & Serverless
 
 ```
 cd ~/Downloads
@@ -131,7 +131,7 @@ npm install -g Serverless
 cd -
 ```
 
-##### Please ensure you have exported your aws credentials into your shell
+#### Please ensure you have exported your aws credentials into your shell
 An Optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
 
 ```
@@ -142,7 +142,7 @@ ln -fs ~/sys_bashrc/_bashrc ~/.bashrc
 source ~/.bashrc
 ```
 
-##### use awskeys command to easily export aws key as env variables with sys_bashrc
+#### use awskeys command to easily export aws key as env variables with sys_bashrc
 
 ```
 csp1
@@ -151,7 +151,7 @@ awskeys list
 awskeys export $YOUR_AWS_PROFILE
 ```
 
-##### Running Deploy Scripts
+#### Running Deploy Scripts
 
 ```
 ### Install packages
