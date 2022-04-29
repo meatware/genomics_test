@@ -70,7 +70,9 @@ DEST_BUCKET=$(aws --profile $AWS_PROFILE \
 aws --profile $AWS_PROFILE \
     --region eu-west-1 \
     s3 rm \
-    s3://${SOURCE_BUCKET}/incoming/sls_test_img1.jpg
+    s3://${DEST_BUCKET}/incoming/sls_test_img1.jpg
+
+### rm any existing dest sanitised image
 
 ### Trigger lambda via s3 copy
 aws --profile $AWS_PROFILE \

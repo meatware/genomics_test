@@ -21,3 +21,4 @@ var/
 
 .serverless/*
 node_modules/*
+scrap*.py
