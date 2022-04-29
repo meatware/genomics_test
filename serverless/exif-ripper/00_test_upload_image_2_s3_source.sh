@@ -36,18 +36,19 @@ SOURCE_BUCKET=$2
 
 if ! command -v jq &> /dev/null
 then
-    echo "!!! Plaese ensure you have jq installed & on your path !!!"
+    echo "!!! Please ensure you have jq installed & on your path !!!"
     exit 42
 fi
 
 #
 if ! command -v eog &> /dev/null
 then
-    echo "!!! Plaese ensure you have eog or eom installed & on your path !!!"
+    echo "!!! Please ensure you have eog or eom installed & on your path !!!"
     exit 42
 fi
 
-cp test_images/OG_IMG_20220423_124829.jpg test_images/sls_test_img1.jpg
+rm -fv ./sls_test_img1_sanitised.jpg
+cp -v test_images/OG_IMG_20220423_124829.jpg test_images/sls_test_img1.jpg
 
 ### Get source bucket name
 SOURCE_BUCKET=$(aws --profile $AWS_PROFILE \

@@ -6,8 +6,6 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
-# from common import uniquify_list, chunks_sublist
-
 LOG = logging.getLogger(__name__)
 
 
@@ -35,22 +33,52 @@ def check_bucket_exists(bucket_name):
         sys.exit(42)
 
 
-def try_except_status(bo3_client_method, fail_str=None):
+def try_except_resp_and_status(bo3_client_method, fail_str=None):
     """
     Takes a partially applied fuction passed to it
     so that it catches status codes/errors in a generalised way.
-    Returns an http status code.
+    Returns an http status code as well as the raw response in a tuple.
+    Note that `bo3_client_method` is a partial. e.g:
+
+        response, s3get_status = try_except_resp_and_status(
+            partial(
+                s3_client.get_object,
+                Bucket=bucket_source,
+                Key=object_key,
+            ),
+            fail_str=f"Failed to copy get s3 object {object_key}",
+        )
+        LOG.info("response: %s", response)
+
+        if s3get_status != 200:
+            LOG.info(
+                "FAILED to copy s3 object <%s> from <%s> to RAM",
+                object_key,
+                bucket_source
+            )
+            sys.exit(42)
+
+        if s3get_status != 200:
+            LOG.info(
+                "FAILED to copy s3 object <%s> from <%s> to RAM",
+                object_key,
+                bucket_source
+            )
+            sys.exit(42)
     """
 
     try:
-        get_status = bo3_client_method
-        status = get_status()["ResponseMetadata"]["HTTPStatusCode"]
+        raw_resp = bo3_client_method
+        status = raw_resp()["ResponseMetadata"]["HTTPStatusCode"]
     except ClientError as err:
         if fail_str:
-            LOG.warning(fail_str, str(err))
-
-        if err.response["Error"]["Code"]:
-            status = err.response["Error"]["Code"]
+            LOG.warning("%s - %s ", fail_str, str(err))
         else:
-            status = str(err)
-    return status
+            LOG.error(str(err))
+
+        status_code = "NoStatus"
+        if err.response["Error"]["Code"]:
+            status_code = err.response["Error"]["Code"]
+
+        status = status_code
+    return (raw_resp(), status)

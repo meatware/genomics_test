@@ -6,7 +6,7 @@ Pictures are uploaded to an S3 bucket A.
 Create a system that retrieves .jpg files when they are uploaded to the S3 bucket A, removes any exif metadata,
 and save them to another S3 bucket B. The path of the files should be the same in buckets A and B.
 
-[![Structure](https://i.ibb.co/j3yJSjc/image-structure.png)
+[![Brief](docs/image_structure.png)
 
 **Step 2**
 To extend this further, we have two users User A and User B. Create IAM users with the following access:
@@ -14,6 +14,110 @@ To extend this further, we have two users User A and User B. Create IAM users wi
 * User B can Read from Bucket B
 
 ## Solution Overview
+
+[![Exif-ripper architecture](docs/exif_ripper.drawio.png)
+One natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream processor. Indeed, a whole pipeline of lambda functions can used in the chain of responsibilty pattern if desired.
+
+[![Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
+
+Given the limited time to accomplish this task, an added benefit of using serverless is that setting up monitoring the bucket for pushed images is trivial because the framework creates the monitoring lambda for us in a few lines of code. When the following code is added to the serverless.yml file, the monitoring lambda pushes an [event](https://www.serverless.com/framework/docs/providers/aws/events/s3) to our custom exif-ripper lambda when a file with the suffix of `.jpg` and a s3 key prefix of `incoming/` is created in the bucket called `mysource-bucket`.
+
+```
+functions:
+  exif:
+    handler: exif.handler
+    events:
+      - s3:
+          bucket: mysource-bucket
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploads/
+            - suffix: .jpg
+```
+
+The exif-ripper lambda Python3 code is located in `serverless/exif-ripper/` and it leverages the following libraries to execute the folloowing workflow:
+1. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#s3): Read binary image file froom s3 into RAM.
+2. [exif](https://pypi.org/project/exif/): Strips any exif data from image
+3. [partial](https://docs.python.org/3/library/functools.html#functools.partial) from [functools](https://docs.python.org/3/library/functools.html#module-functools) : Use of a partial function try-except wrapper to get more accurate error messages from AWS API. Thus, the dev does not have spend as much time worrying about logging potential errors.
+4. Boto3 again to write the sanitised file to the destination bucket.
+
+#####  Try-except wrapper:
+```
+def try_except_resp_and_status(bo3_client_method, fail_str=None):
+    """
+    Takes a partially applied fuction passed to it
+    so that it catches status codes/errors in a generalised way.
+    Returns an http status code as well as the raw response in a tuple.
+    Note that `bo3_client_method` is a partial.
+    """
+
+    try:
+        raw_resp = bo3_client_method
+        status = raw_resp()["ResponseMetadata"]["HTTPStatusCode"]
+    except ClientError as err:
+        if fail_str:
+            LOG.warning("%s - %s ", fail_str, str(err))
+        else:
+            LOG.error(str(err))
+
+        status_code = "NoStatus"
+        if err.response["Error"]["Code"]:
+            status_code = err.response["Error"]["Code"]
+
+        status = status_code
+    return (raw_resp(), status)
+
+######################## Usage ########################
+response, s3get_status = try_except_resp_and_status(
+    partial(
+        s3_client.get_object,
+        Bucket=bucket_source,
+        Key=object_key,
+    ),
+    fail_str=f"Failed to copy get s3 object {object_key}",
+)
+LOG.info("response: %s", response)
+
+#
+if s3get_status != 200:
+    LOG.info(
+        "FAILED to copy s3 object <%s> from <%s> to RAM",
+        object_key,
+        bucket_source
+    )
+    sys.exit(42)
+```
+
+```
+2022-04-29 20:49:26.269	[WARNING]	S3 object failed to copy - An error occurred (NoSuchBucket) when calling the PutObject operation: The specified bucket does not exist
+2022-04-29 20:49:26.270	[INFO]	FAILED to copy s3 object <incoming/sls_test_img1.jpg> from <genomics-source-dev-fern> to <genomics-destination-dev-fern>
+END Duration: 819.68 ms Memory Used: 65 MB
+
+```
+
+
+##### API errors handled by botocore
+###### (from serverless/exif-ripper/venv/lib64/python3.8/site-packages/botocore/data/s3/2006-03-01/service-2.json)
+```
+</snip>
+"GetObject":{
+  "name":"GetObject",
+  "http":{
+    "method":"GET",
+    "requestUri":"/{Bucket}/{Key+}"
+  },
+  "input":{"shape":"GetObjectRequest"},
+  "output":{"shape":"GetObjectOutput"},
+  "errors":[
+    {"shape":"NoSuchKey"},             # <--!!!
+    {"shape":"InvalidObjectState"}     # <--!!!
+  </snip>
+```
+
+### usage
+
+
+
 The solution for this problem was solved using the following deployment tools:
 1. Terraform - To create common shared resources such as IAM policies, S3 buckets, DynamoDB tables, etc
 2. Serverless (sls) - To deploy lambda functions
@@ -135,6 +239,8 @@ cd -
 ```
 
 #### Please ensure you have exported your aws credentials into your shell
+This has been test-deployed into an R&D account using Admin credentials. Try to do the same or use an account with the perms to use lambda, s3, iam, dynamodb, and SSM (syatems manager) at the least.
+
 An Optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
 
 ```

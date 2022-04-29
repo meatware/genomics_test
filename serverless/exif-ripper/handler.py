@@ -9,7 +9,7 @@ import logging
 
 from functools import partial
 from exif import Image as ExifImage
-from boto3_helpers import boto_session, try_except_status, check_bucket_exists
+from boto3_helpers import boto_session, try_except_resp_and_status, check_bucket_exists
 
 
 LOG = logging.getLogger()
@@ -83,8 +83,23 @@ def exifripper(event, context):
         sys.exit(42)
 
     ### Process new uploaded image file
-    response = s3_client.get_object(Bucket=bucket_source, Key=object_key)
+    response, s3get_status = try_except_resp_and_status(
+        partial(
+            s3_client.get_object,
+            Bucket=bucket_source,
+            Key=object_key,
+        ),
+        fail_str=f"Failed to copy get s3 object {object_key}",
+    )
     LOG.info("response: %s", response)
+
+    if s3get_status != 200:
+        LOG.info(
+            "FAILED to copy s3 object <%s> from <%s> to RAM",
+            "fake_object_that_does_not_exist",
+            bucket_source
+        )
+        sys.exit(42)
 
     my_image = read_img_2memory(get_obj_resp=response)
     log_image_data(img=my_image, label="exif data pass0")
@@ -101,7 +116,7 @@ def exifripper(event, context):
         log_image_data(img=my_image, label="exif data pass2")
 
     ### Copy image with sanitised exif data to destination bucket
-    s3cp_status = try_except_status(
+    _, s3cp_status = try_except_resp_and_status(
         partial(
             s3_client.put_object,
             ACL="bucket-owner-full-control",
