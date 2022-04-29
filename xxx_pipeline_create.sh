@@ -58,7 +58,7 @@ rm -rf .terraform .terraform.lock.hcl \
     && $terraform_exec validate \
     && $terraform_exec apply -var random_string=$random_string -auto-approve
 
-    terraform_v1.0.6 output | awk '{print $3}' | sed 's|"||g' \
+    terraform_v1.0.6 output | awk '{print $3}' | grep role | sed 's|"||g' \
         > ../../serverless/exif-ripper/role_arn.output
 
 cd -
@@ -68,6 +68,10 @@ cd -
 cd serverless/exif-ripper
     tf_rolearn=$(cat role_arn.output)
     tf_deploy_bucket=$(cat sls_deply_buck.output)
+
+    serverless plugin install --name serverless-ssm-fetch
+    serverless plugin install --name serverless-python-requirements
+    serverless plugin install --name serverless-stack-output
 
     serverless deploy \
         --stage dev \

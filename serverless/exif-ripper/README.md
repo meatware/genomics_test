@@ -22,8 +22,15 @@ npm install -g serverless
 ### Serverless commands
 Please endsure your aws credentials are exported as env variables
 ```
+cd serverless/exif-ripper
+
 ### Note that serverless config corresponding to the deployment stage is in the config folder
 cat config/dev.yml
+
+### Install serverless plugins
+serverless plugin install -n serverless-python-requirements
+serverless plugin install -n serverless-stack-output
+serverless plugin install --name serverless-ssm-fetch
 
 ### Only severless deploy after running terraform code that constructs IAM role, policy & buckets
 serverless deploy --stage dev --region eu-west-1 --param="rolearn=$ROLE_ARN" --param="dbuck=$DEPLOY_BUCKET"

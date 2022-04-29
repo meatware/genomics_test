@@ -37,6 +37,10 @@ echo "Destroying dev stack now..."
 
 ### Remove serverless
 cd serverless/exif-ripper
+    serverless plugin install --name serverless-ssm-fetch
+    serverless plugin install --name serverless-python-requirements
+    serverless plugin install --name serverless-stack-output
+
     # TODO: think of a bbetter way to test this
     serverless remove --stage dev --region eu-west-1 || true
 cd -
