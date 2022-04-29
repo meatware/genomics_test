@@ -46,10 +46,10 @@ cd -
 ## 1
 cd terraform_v1/02_DEV
 
-rm -rfv .terraform .terraform.lock.hcl \
-    && $terraform_exec init 
+rm -rf .terraform .terraform.lock.hcl \
+    && $terraform_exec init
 
-$terraform_exec destroy -var random_string=killmenow -auto-approve    
+$terraform_exec destroy -var random_string=killmenow -auto-approve
 
 cd -
 
@@ -57,11 +57,10 @@ cd -
 ## 2
 cd terraform_v1/01_sls_deployment_bucket
 
-rm -rfv .terraform .terraform.lock.hcl \
-    && $terraform_exec init 
+rm -rf .terraform .terraform.lock.hcl \
+    && $terraform_exec init
 
-$terraform_exec destroy -var random_string=killmenow -auto-approve    
+$terraform_exec destroy -var random_string=killmenow -auto-approve
 
 cd -
 
-    
