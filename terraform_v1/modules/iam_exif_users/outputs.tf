@@ -1,7 +1,7 @@
 output "iam_exif_s3_rwa_id" {
   description = "user A RW IAM access id"
   sensitive   = true
-  value       = aws_iam_access_key.exif_s3_rwa.secret
+  value       = aws_iam_access_key.exif_s3_rwa.id
 }
 
 output "iam_exif_s3_rwa_secret" {

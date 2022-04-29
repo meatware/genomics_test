@@ -41,10 +41,10 @@ echo "creating dev stack now..."
 ## 1
 cd terraform_v1/01_sls_deployment_bucket
 
-rm -rfv .terraform .terraform.lock.hcl \
+rm -rf .terraform .terraform.lock.hcl \
     && $terraform_exec init \
     && $terraform_exec validate \
-    && $terraform_exec apply -var random_string=$random_string -auto-approve   
+    && $terraform_exec apply -var random_string=$random_string -auto-approve
 
     terraform_v1.0.6 output | awk '{print $3}' | sed 's|"||g' \
         > ../../serverless/exif-ripper/sls_deply_buck.output
@@ -53,12 +53,12 @@ cd -
 ## 2
 cd terraform_v1/02_DEV
 
-rm -rfv .terraform .terraform.lock.hcl \
+rm -rf .terraform .terraform.lock.hcl \
     && $terraform_exec init \
     && $terraform_exec validate \
-    && $terraform_exec apply -var random_string=$random_string -auto-approve    
+    && $terraform_exec apply -var random_string=$random_string -auto-approve
 
-    terraform_v1.0.6 output | awk '{print $3}' | sed 's|"||g' \
+    terraform_v1.0.6 output | awk '{print $3}' | grep role | sed 's|"||g' \
         > ../../serverless/exif-ripper/role_arn.output
 
 cd -
@@ -69,10 +69,13 @@ cd serverless/exif-ripper
     tf_rolearn=$(cat role_arn.output)
     tf_deploy_bucket=$(cat sls_deply_buck.output)
 
+    serverless plugin install --name serverless-ssm-fetch
+    serverless plugin install --name serverless-python-requirements
+    serverless plugin install --name serverless-stack-output
+
     serverless deploy \
         --stage dev \
         --region eu-west-1 \
         --param="rolearn=${tf_rolearn}" \
         --param="dbuck=${tf_deploy_bucket}"
 cd -
-    

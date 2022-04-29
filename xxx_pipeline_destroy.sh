@@ -37,6 +37,10 @@ echo "Destroying dev stack now..."
 
 ### Remove serverless
 cd serverless/exif-ripper
+    serverless plugin install --name serverless-ssm-fetch
+    serverless plugin install --name serverless-python-requirements
+    serverless plugin install --name serverless-stack-output
+
     # TODO: think of a bbetter way to test this
     serverless remove --stage dev --region eu-west-1 || true
 cd -
@@ -46,10 +50,10 @@ cd -
 ## 1
 cd terraform_v1/02_DEV
 
-rm -rfv .terraform .terraform.lock.hcl \
-    && $terraform_exec init 
+rm -rf .terraform .terraform.lock.hcl \
+    && $terraform_exec init
 
-$terraform_exec destroy -var random_string=killmenow -auto-approve    
+$terraform_exec destroy -var random_string=killmenow -auto-approve
 
 cd -
 
@@ -57,11 +61,10 @@ cd -
 ## 2
 cd terraform_v1/01_sls_deployment_bucket
 
-rm -rfv .terraform .terraform.lock.hcl \
-    && $terraform_exec init 
+rm -rf .terraform .terraform.lock.hcl \
+    && $terraform_exec init
 
-$terraform_exec destroy -var random_string=killmenow -auto-approve    
+$terraform_exec destroy -var random_string=killmenow -auto-approve
 
 cd -
 
-    

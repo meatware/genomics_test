@@ -16,8 +16,8 @@ custom:
   deploymentBucket: ${param:dbuck, self:custom.deploymentBucketFromFile}
   bucketSourceSsmKey: "${self:custom.ssm_root_prefix}/${self:custom.currentStage}/bucketsource"
   serverlessSsmFetch:
-    bucketSource: "${self:custom.bucketSourceSsmKey}"  
-    bucketDest: "${self:custom.ssm_root_prefix}/${self:custom.currentStage}/bucketdest" 
+    bucketSource: "${self:custom.bucketSourceSsmKey}"
+    bucketDest: "${self:custom.ssm_root_prefix}/${self:custom.currentStage}/bucketdest"
   pythonRequirements:
     dockerizePip: true
 
@@ -30,9 +30,6 @@ provider:
   region: ${self:custom.awsRegion}
   deploymentBucket: ${self:custom.deploymentBucket}
   role: ${self:custom.iamRoleArn}
-
-environment:
-
 
 package:
   individually: true
@@ -50,7 +47,7 @@ functions:
     handler: handler.exifripper
     ssmToEnvironment:
       - bucketSource
-      - bucketDest    
+      - bucketDest
     package:
       individually: true
       exclude:
@@ -60,7 +57,7 @@ functions:
         - boto3_helpers.py
         - secrets_manager.py
         - requirements.txt
-        - __init__.py    
+        - __init__.py
     events:
       - s3:
           bucket: ${ssm:${self:custom.bucketSourceSsmKey}}
@@ -69,3 +66,4 @@ functions:
             - prefix: incoming
             - suffix: .jpg
           existing: true
+#
