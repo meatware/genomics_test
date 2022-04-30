@@ -2,7 +2,7 @@
 **Step 1**
 A company allows their users to upload pictures to an S3 bucket. These pictures are always in the .jpg format. The company wants these files to be stripped from any exif metadata before being shown on their website. Pictures are uploaded to an S3 bucket A. Create a system that retrieves .jpg files when they are uploaded to the S3 bucket A, removes any exif metadata, and save them to another S3 bucket B. The path of the files should be the same in buckets A and B.
 
-[Brief](docs/image_structure.png)
+![Brief](docs/image_structure.png)
 
 **Step 2**
 To extend this further, we have two users User A and User B. Create IAM users with the following access:
@@ -11,11 +11,11 @@ To extend this further, we have two users User A and User B. Create IAM users wi
 
 ## Solution Overview
 
-[Exif-ripper architecture](docs/exif_ripper.drawio.png)
+![Exif-ripper architecture](docs/exif_ripper.drawio.png)
 
 One natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream image processor. Indeed, a whole pipeline of lambda functions can used in the "chain of responsibilty pattern" if desired.
 
-[Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
+![Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
 
 Given the limited time to accomplish this task, a benefit of using serverless is that it is trivial to set up monitoring on bucket for pushed images because the framework creates the monitoring lambda for us in a few lines of code. When the following code is added to the serverless.yml file, the monitoring lambda pushes an [event](https://www.serverless.com/framework/docs/providers/aws/events/s3) to our custom exif-ripper lambda when a file with the suffix of `.jpg` and a s3 key prefix of `incoming/` is created in the bucket called `mysource-bucket`.
 
