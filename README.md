@@ -1,12 +1,8 @@
 # Genomics Test
 **Step 1**
-A company allows their users to upload pictures to an S3 bucket. These pictures are always in the .jpg format.
-The company wants these files to be stripped from any exif metadata before being shown on their website.
-Pictures are uploaded to an S3 bucket A.
-Create a system that retrieves .jpg files when they are uploaded to the S3 bucket A, removes any exif metadata,
-and save them to another S3 bucket B. The path of the files should be the same in buckets A and B.
+A company allows their users to upload pictures to an S3 bucket. These pictures are always in the .jpg format. The company wants these files to be stripped from any exif metadata before being shown on their website. Pictures are uploaded to an S3 bucket A. Create a system that retrieves .jpg files when they are uploaded to the S3 bucket A, removes any exif metadata, and save them to another S3 bucket B. The path of the files should be the same in buckets A and B.
 
-[![Brief](docs/image_structure.png)
+[Brief](docs/image_structure.png)
 
 **Step 2**
 To extend this further, we have two users User A and User B. Create IAM users with the following access:
@@ -15,14 +11,15 @@ To extend this further, we have two users User A and User B. Create IAM users wi
 
 ## Solution Overview
 
-[![Exif-ripper architecture](docs/exif_ripper.drawio.png)
-One natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream processor. Indeed, a whole pipeline of lambda functions can used in the chain of responsibilty pattern if desired.
+[Exif-ripper architecture](docs/exif_ripper.drawio.png)
 
-[![Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
+One natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream image processor. Indeed, a whole pipeline of lambda functions can used in the "chain of responsibilty pattern" if desired.
 
-Given the limited time to accomplish this task, an added benefit of using serverless is that setting up monitoring the bucket for pushed images is trivial because the framework creates the monitoring lambda for us in a few lines of code. When the following code is added to the serverless.yml file, the monitoring lambda pushes an [event](https://www.serverless.com/framework/docs/providers/aws/events/s3) to our custom exif-ripper lambda when a file with the suffix of `.jpg` and a s3 key prefix of `incoming/` is created in the bucket called `mysource-bucket`.
+[Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
 
-```
+Given the limited time to accomplish this task, a benefit of using serverless is that it is trivial to set up monitoring on bucket for pushed images because the framework creates the monitoring lambda for us in a few lines of code. When the following code is added to the serverless.yml file, the monitoring lambda pushes an [event](https://www.serverless.com/framework/docs/providers/aws/events/s3) to our custom exif-ripper lambda when a file with the suffix of `.jpg` and a s3 key prefix of `incoming/` is created in the bucket called `mysource-bucket`.
+
+```yaml
 functions:
   exif:
     handler: exif.handler
@@ -35,102 +32,23 @@ functions:
             - suffix: .jpg
 ```
 
-The exif-ripper lambda Python3 code is located in `serverless/exif-ripper/` and it leverages the following libraries to execute the folloowing workflow:
+The lambda Python3 code for exif-ripper is located in `serverless/exif-ripper/` and it leverages the following libraries to execute the folloowing workflow:
 1. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#s3): Read binary image file froom s3 into RAM.
 2. [exif](https://pypi.org/project/exif/): Strips any exif data from image
-3. [partial](https://docs.python.org/3/library/functools.html#functools.partial) from [functools](https://docs.python.org/3/library/functools.html#module-functools) : Use of a partial function try-except wrapper to get more accurate error messages from AWS API. Thus, the dev does not have spend as much time worrying about logging potential errors.
-4. Boto3 again to write the sanitised file to the destination bucket.
-
-#####  Try-except wrapper:
-```
-def try_except_resp_and_status(bo3_client_method, fail_str=None):
-    """
-    Takes a partially applied fuction passed to it
-    so that it catches status codes/errors in a generalised way.
-    Returns an http status code as well as the raw response in a tuple.
-    Note that `bo3_client_method` is a partial.
-    """
-
-    try:
-        raw_resp = bo3_client_method
-        status = raw_resp()["ResponseMetadata"]["HTTPStatusCode"]
-    except ClientError as err:
-        if fail_str:
-            LOG.warning("%s - %s ", fail_str, str(err))
-        else:
-            LOG.error(str(err))
-
-        status_code = "NoStatus"
-        if err.response["Error"]["Code"]:
-            status_code = err.response["Error"]["Code"]
-
-        status = status_code
-    return (raw_resp(), status)
-
-######################## Usage ########################
-response, s3get_status = try_except_resp_and_status(
-    partial(
-        s3_client.get_object,
-        Bucket=bucket_source,
-        Key=object_key,
-    ),
-    fail_str=f"Failed to copy get s3 object {object_key}",
-)
-LOG.info("response: %s", response)
-
-#
-if s3get_status != 200:
-    LOG.info(
-        "FAILED to copy s3 object <%s> from <%s> to RAM",
-        object_key,
-        bucket_source
-    )
-    sys.exit(42)
-```
-
-```
-2022-04-29 20:49:26.269	[WARNING]	S3 object failed to copy - An error occurred (NoSuchBucket) when calling the PutObject operation: The specified bucket does not exist
-2022-04-29 20:49:26.270	[INFO]	FAILED to copy s3 object <incoming/sls_test_img1.jpg> from <genomics-source-dev-fern> to <genomics-destination-dev-fern>
-END Duration: 819.68 ms Memory Used: 65 MB
-
-```
-
-
-##### API errors handled by botocore
-###### (from serverless/exif-ripper/venv/lib64/python3.8/site-packages/botocore/data/s3/2006-03-01/service-2.json)
-```
-</snip>
-"GetObject":{
-  "name":"GetObject",
-  "http":{
-    "method":"GET",
-    "requestUri":"/{Bucket}/{Key+}"
-  },
-  "input":{"shape":"GetObjectRequest"},
-  "output":{"shape":"GetObjectOutput"},
-  "errors":[
-    {"shape":"NoSuchKey"},             # <--!!!
-    {"shape":"InvalidObjectState"}     # <--!!!
-  </snip>
-```
+3. Boto3 again to write the sanitised file to the destination bucket.potential errors.
 
 ### usage
-
-
-
 The solution for this problem was solved using the following deployment tools:
 1. Terraform - To create common shared resources such as IAM policies, S3 buckets, DynamoDB tables, etc
 2. Serverless (sls) - To deploy lambda functions
 
-Sls is a better choice to deploy lambda functions, API Gateways, step functions, etc because the Serverless.yml is more tightly coupled to the dev code and thus changes can be more easily made in only a few lines of code compared to the several pages required by Terraform. Additionally, it allows developers to  easily modify the infrastructure without asking for DevOps help (as not everyone knows Terraform). However, It can be a bad idea to allow anyone with access to a Serverless.yml file to deploy whatever they like. Thus, shared infrastructure is deployed solely by Terraform and ideally this paradigm would be enforced by IAM permissions.
-
-Two methods of deploying the Terraform code are included here. V2 is a dryer method that also uses a remote s3/dynamodb backend
+sls is a better choice to deploy lambda functions, API Gateways, step functions, etc because the serverless.yml is tightly coupled to the dev code and thus changes can be easily made in a few lines of code compared to the several pages required for Terraform. Additionally, it allows developers to easily modify the infrastructure without asking for DevOps help (as not everyone knows the Terraform DSL). However, It can be a bad idea to allow anyone with access to a Serverless.yml file to deploy whatever they like. Thus, shared infrastructure is deployed solely by Terraform and ideally this paradigm would be enforced by appropriate IAM permissions.
 
 #### Serverless Function Overview
-Exif-Ripper is a serverless application that attaches an event triggering rule to "watch" a source s3 bucket for the upload of any jpg file. When this happens an AWS event invokes a lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory so does not inefficiently write the file to a scratch volume.
+Exif-Ripper is a serverless application that attaches an event triggering rule to "watch" a source s3 bucket for the upload of any jpg file. When this happens an AWS event invokes a lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory, and thus does not incur write time-penalties by writing the file to scratch.
 
 #### Directory structure
-```
+```bash
 .
 ├── Serverless
 │   └── exif-ripper
@@ -156,8 +74,44 @@ Exif-Ripper is a serverless application that attaches an event triggering rule t
     └── modules
         ├── exif_ripper_buckets
         └── lambda_iam_role_and_policies
-
 ```
+
+The directory structure in this project colocates the infrastructure code with the dev code. An alternative method is to seperate the infrastructure code from the dev code would be to seperate them into x2 repos:
+
+1. genomics-test (conatinas dev serverless code)
+2. genomics-test-infra (contains only terraform code)
+
+**Pros and cons of both method:**
+The primary benefit of colocation of the terraform code within a serverless project is the ostensible ease of deploying the compressed serverless zip file from a single directory [./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). In the context of this project in which there ia a requirement to share an deployable code base, this is definately the simplest method.
+
+```bash
+.
+├── genomics-test
+    ├── Serverless (code repo)
+    ├── Terraform_v1 (terraform repo)
+    └── Terraform_v2 (terraform repo)
+```
+
+However, if a build server was available, we can escape a mono-repo-centric view because commands can be run outside of the context/restrictions of a mono-repo/folder.
+
+```bash
+.
+├── build_agent_dir
+    ├── genomics-test  (code repo)
+    │   ├── Serverless
+    │   └── exif-ripper
+    │       ├── config
+    │       └── test_images
+    └── genomics-test-infra (terraform repo)
+         └── terraform_v1
+```
+
+There are several benefits in maintaining the infrastucture code in a separate repo:
+1. Increased DevOps agility: The application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the terraform code is tightly coupled to the dev code, then even minor IaC changes such as changing a tag will result in a long delays.
+2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is natuarally unsuitable for terraform IaC which typically only requires master and feature branches. The rationale for this comes down to the global structure & complexity of the terraform code. The levels for which can be roughly described as:
+
+
+Two methods of deploying the Terraform code are included here. V2 is a dryer method that also uses a remote s3/dynamodb backend
 
 #### Terraform_v1 does the following:
 1. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
@@ -167,7 +121,7 @@ Exif-Ripper is a serverless application that attaches an event triggering rule t
 5. Creates two users with RO and RW permissions to the buckets as specified in the brief
 6. Uses `Terraform output` to write the role arn & the deployment bucket name to the Serverless folder
 
-```
+```bash
 .
 ├── 01_sls_deployment_bucket
 ├── 02_DEV
@@ -187,7 +141,7 @@ This version is included to illustrate a method that is more DRY than v1.
 4. Pushes the names of these buckets to SSM
 5. Creates a lambda role and policy
 
-```
+```bash
 .
 ├── 00_setup_remote_s3_backend_dev
 ├── 00_setup_remote_s3_backend_prod
@@ -209,7 +163,7 @@ This version is included to illustrate a method that is more DRY than v1.
 3. Creates the trigger on the source bucket
 4. Creates the lambda function (using buckets created by Terraform)
 
-```
+```bash
 .
 ├── Serverless
 │   └── exif-ripper
@@ -228,7 +182,7 @@ Several scripts have been included to assist getting this solution deployed. Ple
 
 #### Install NVM, Node & Serverless
 
-```
+```bash
 cd ~/Downloads
 sudo apt install curl
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
@@ -243,7 +197,7 @@ This has been test-deployed into an R&D account using Admin credentials. Try to 
 
 An Optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
 
-```
+```bash
 cd
 git clone https://github.com/meatware/sys_bashrc.git
 mv .bashrc .your_old_bashrc
@@ -253,7 +207,7 @@ source ~/.bashrc
 
 #### use awskeys command to easily export aws key as env variables with sys_bashrc
 
-```
+```bash
 csp1
 awskeys help
 awskeys list
@@ -262,7 +216,7 @@ awskeys export $YOUR_AWS_PROFILE
 
 #### Running Deploy Scripts
 
-```
+```bash
 ### Install packages
 sudo apt install eog jq unzip wget
 
