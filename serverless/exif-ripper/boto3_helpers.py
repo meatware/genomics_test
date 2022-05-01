@@ -6,8 +6,6 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
-# from common import uniquify_list, chunks_sublist
-
 LOG = logging.getLogger(__name__)
 
 
@@ -33,24 +31,3 @@ def check_bucket_exists(bucket_name):
     except ClientError:
         LOG.critical("s3 bucket %s does not exist or access denied", bucket_name)
         sys.exit(42)
-
-
-def try_except_status(bo3_client_method, fail_str=None):
-    """
-    Takes a partially applied fuction passed to it
-    so that it catches status codes/errors in a generalised way.
-    Returns an http status code.
-    """
-
-    try:
-        get_status = bo3_client_method
-        status = get_status()["ResponseMetadata"]["HTTPStatusCode"]
-    except ClientError as err:
-        if fail_str:
-            LOG.warning(fail_str, str(err))
-
-        if err.response["Error"]["Code"]:
-            status = err.response["Error"]["Code"]
-        else:
-            status = str(err)
-    return status

@@ -7,9 +7,8 @@ import sys
 import os
 import logging
 
-from functools import partial
 from exif import Image as ExifImage
-from boto3_helpers import boto_session, try_except_status, check_bucket_exists
+from boto3_helpers import boto_session, check_bucket_exists
 
 
 LOG = logging.getLogger()
@@ -84,6 +83,7 @@ def exifripper(event, context):
 
     ### Process new uploaded image file
     response = s3_client.get_object(Bucket=bucket_source, Key=object_key)
+
     LOG.info("response: %s", response)
 
     my_image = read_img_2memory(get_obj_resp=response)
@@ -101,26 +101,12 @@ def exifripper(event, context):
         log_image_data(img=my_image, label="exif data pass2")
 
     ### Copy image with sanitised exif data to destination bucket
-    s3cp_status = try_except_status(
-        partial(
-            s3_client.put_object,
-            ACL="bucket-owner-full-control",
-            Body=my_image.get_file(),
-            Bucket=bucket_dest,
-            Key=object_key,
-        ),
-        fail_str="S3 object failed to copy",
+    s3_client.put_object(
+        ACL="bucket-owner-full-control",
+        Body=my_image.get_file(),
+        Bucket=bucket_dest,
+        Key=object_key,
     )
-
-    ### Final exit
-    if s3cp_status != 200:
-        LOG.info(
-            "FAILED to copy s3 object <%s> from <%s> to <%s>",
-            object_key,
-            bucket_source,
-            bucket_dest,
-        )
-        sys.exit(42)
 
     LOG.info(
         "SUCCESS Copying s3 object <%s> from <%s> to <%s>",
