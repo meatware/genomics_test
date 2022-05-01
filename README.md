@@ -123,7 +123,7 @@ The primary benefit of co-location of the terraform code within a serverless pro
     └── Terraform_v2 (terraform repo)
 ```
 
-However, if a build server was available, we can escape the monorepo-centric notions imposed by the co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
+However, if a build server was available, we can escape monorepo-centric notions imposed by the co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
 
 ```bash
 .
@@ -145,22 +145,22 @@ However, if a build server was available, we can escape the monorepo-centric not
 
 
 There are several benefits in maintaining the infrastructure code in a separate repo:
-1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via co-location, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur which is almost always unacceptable.
-2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be [pinned](https://www.terraform.io/language/modules/sources#selecting-a-revision) against various tag versions in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
+1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via co-location, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur. This is almost always unacceptable.
+2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be [pinned](https://www.terraform.io/language/modules/sources#selecting-a-revision) against various tagged commits in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
 
 ### Terraform code structure Overview
-A few methods of organising and deploying the Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your organisation.
+A few patterns of organising and deploying Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your organisation.
+
+1. Monolith or multi-repo pattern?
+2. Local or remote state?
+3. Local and/or remote modules?
+4. Organisational IaC architecture that addresses separation of concerns & scalability. DRY code and flexibility usually results in an increase in complexity the balance of which depends on the company's needs.
+
 
 ##### [5 Common Terraform Patterns (Click embedded video below)](https://www.youtube.com/watch?v=wgzgVm7Sqlk)
 [![Evolving Your Infrastructure with Terraform" TEXT](./docs/evolving_terraform_thumb.png)](https://www.youtube.com/watch?v=wgzgVm7Sqlk "5 Common Terraform Patterns")
 
 Some of the pertinent questions with regards to how terraform code is structured are listed below, but a detailed discussion is beyond the scope of this document.
-
-1. Monolith or multi-repo pattern?
-2. Local or remote state?
-3. Local and/or remote modules?
-4. Organisational IaC architecture that addresses seperation of concerns & scalability. DRY code and flexibility usually results in an increase in complexity the balance of which depends on the company's needs.
-
 
 1. `terraform_v1` - The simplest method
     - Uses a local state file so the terraform.tfstate file is saved to the local disk. In order the facilitate shared team editing, the state file is typically stored in git. This is a potential security concern as sensitive values can be exposed.
