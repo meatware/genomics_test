@@ -138,7 +138,7 @@ A few methods of organising and deploying the Terraform code are illustrated her
 
 Some of the pertinent questions with regards to how terraform code is structured are:
 
-1. Monolith or multi-repo structure
+1. Monolith or multi-repo structure?
 2.
 
 
