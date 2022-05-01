@@ -69,7 +69,7 @@ See `Serverless/exif-ripper/Serverless.yml`
 3. Creates the trigger on the source bucket
 4. Creates the lambda function (using buckets created by Terraform)
 
-```bash
+```
 .
 ├── Serverless
 │   └── exif-ripper
@@ -79,7 +79,7 @@ See `Serverless/exif-ripper/Serverless.yml`
 
 
 #### Monorepo Directory structure
-```bash
+```
 .
 ├── Serverless
 │   └── exif-ripper
@@ -115,7 +115,7 @@ The directory structure in this project co-locates the infrastructure code with 
 **Pros and cons of co-location method:**
 The primary benefit of co-location of the terraform code within a Serverless project is the ostensible ease of deploying the compressed Serverless zip file from a single directory [./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). This makes sense in the context of this example project because there is a requirement to share an uncomplicated code base, and thus this simple method was chosen.
 
-```bash
+```
 .
 ├── genomics-test
     ├── Serverless (code repo)
@@ -182,7 +182,7 @@ See `xxx_pipeline_create.sh`
 5. Creates two users with RO and RW permissions to the buckets as specified in the brief
 6. Uses `Terraform output` to write the role arn & the deployment bucket name to the Serverless folder. Both these variables are used to bootstrap Serverless and thus cannot be retrieved from SSM.
 
-```bash
+```
 .
 ├── 01_sls_deployment_bucket
 ├── 02_DEV
@@ -202,7 +202,7 @@ This version is included to illustrate a method that is more DRY than v1. See `x
 4. Pushes the names of these buckets to SSM
 5. Creates a lambda role and policy
 
-```bash
+```
 .
 ├── 00_setup_remote_s3_backend_dev
 ├── 00_setup_remote_s3_backend_prod
@@ -280,7 +280,7 @@ rm -f terraform_1.0.6_linux_amd64.zip
 ```
 
 #### Terraform_v1 with Serverless application and users (just dev)
-```
+```bash
 ### Create stack From repo root
 ./xxx_pipeline_create.sh terraform_v1.0.6 $YOUR_TERRAFORM_EXEC $RANDOM_STRING
 
@@ -301,8 +301,9 @@ cd -
 ### DESTROY STACK ONCE FINISHED
 ./xxx_pipeline_destroy.sh $YOUR_TERRAFORM_EXEC
 ```
+
 #### Terraform_v2 (NO Serverless or Users) - dev & prod
-```
+```bash
 ### Create stack From repo root
 ./xxx_tfver2_pipeline_create.sh $YOUR_TERRAFORM_EXEC $RANDOM_STRING
 
