@@ -134,7 +134,7 @@ There are several benefits in maintaining the infrastucture code in a separate r
 
 A few methods of organising and deploying the Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your orgainisation.
 
-[<img src="https://www.youtube.com/watch?v=wgzgVm7Sqlk" width="50%">](https://www.youtube.com/watch?v=Hc79sDi3f0U "Evolving Your Infrastructure with Terraform")
+![<img src="https://www.youtube.com/watch?v=wgzgVm7Sqlk" width="50%">](https://www.youtube.com/watch?v=Hc79sDi3f0U "Evolving Your Infrastructure with Terraform")
 
 Some of the pertinent questions with regards to how terraform code is structured are:
 
