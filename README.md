@@ -54,7 +54,7 @@ Note that options 3 & 4 are used in this example repo.
 
 
 Further reading:
-1. [The definitive guide to using Terraform with the Serverless Framework](https://www.Serverless.com/blog/definitive-guide-terraform-Serverless/
+1. [The definitive guide to using Terraform with the Serverless Framework](https://www.Serverless.com/blog/definitive-guide-terraform-Serverless/)
 2. [Terraform & Serverless framework, a match made in heaven?](https://medium.com/contino-engineering/terraform-Serverless-framework-a-match-made-in-heaven-part-i-69af51155e00)
 3. [A Beginner's Guide to Terraform and Serverless](https://blog.scottlogic.com/2020/01/21/beginners-terraform-Serverless.html)
 
@@ -265,7 +265,7 @@ awskeys export $YOUR_AWS_PROFILE
 
 ```bash
 ### Install packages
-sudo apt install eog jq unzip wget
+sudo apt install eog jq unzip curl wget
 
 ### Install latest aws cli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
