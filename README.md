@@ -196,7 +196,7 @@ See `xxx_pipeline_create.sh`
 
 #### Terraform_v2 does the following:
 This version is included to illustrate a method that is more DRY than v1. See `xxx_tfver2_pipeline_create.sh`
-1. Creates an s3/dynamodb backend and writes the backend config files to envs folder (00_setup_remote_s3_backend_dev)
+1. Creates a global s3/dynamodb backend and writes the backend config files to envs folder (`00_setup_remote_s3_backend_{dev,prod}`)
 2. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
 3. Creates source & destination s3 buckets for exif image processing
 4. Pushes the names of these buckets to SSM
