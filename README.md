@@ -54,15 +54,31 @@ Note that options 3 & 4 are used in this example repo.
 
 
 Further reading:
-[The definitive guide to using Terraform with the Serverless Framework](https://www.serverless.com/blog/definitive-guide-terraform-serverless/)
-[Terraform & Serverless framework, a match made in heaven?](https://medium.com/contino-engineering/terraform-serverless-framework-a-match-made-in-heaven-part-i-69af51155e00)
-[A Beginner's Guide to Terraform and Serverless](https://blog.scottlogic.com/2020/01/21/beginners-terraform-serverless.html)
+1. [The definitive guide to using Terraform with the Serverless Framework](https://www.serverless.com/blog/definitive-guide-terraform-serverless/
+2. [Terraform & Serverless framework, a match made in heaven?](https://medium.com/contino-engineering/terraform-serverless-framework-a-match-made-in-heaven-part-i-69af51155e00)
+3. [A Beginner's Guide to Terraform and Serverless](https://blog.scottlogic.com/2020/01/21/beginners-terraform-serverless.html)
 
 
-#### Serverless Function Overview
-Exif-Ripper is a serverless application that attaches an event triggering lambda that monitors a source s3 bucket for the upload of jpg files. When this happens an AWS event invokes a lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory, and thus does not incur write time-penalties by writing the file to scratch.
+### Serverless Function Overview
+Exif-Ripper is a serverless application that attaches an event triggering lambda that monitors a source s3 bucket for the upload of jpg files. When this happens an AWS event invokes another lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory, and thus does not incur write time-penalties by writing the file to scratch.
 
-#### Directory structure
+#### The Serverless.yml does the following:
+See `serverless/exif-ripper/serverless.yml`
+1. Uses the Serverless deployment bucket created by Terraform
+2. Fetches ssm variables that have previously been pushed by the Terraform code: (source and destination buckets)
+3. Creates the trigger on the source bucket
+4. Creates the lambda function (using buckets created by Terraform)
+
+```bash
+.
+├── Serverless
+│   └── exif-ripper
+│       ├── config
+│       └── test_images
+```
+
+
+#### Monorepo Directory structure
 ```bash
 .
 ├── Serverless
@@ -107,7 +123,7 @@ The primary benefit of co-location of the terraform code within a serverless pro
     └── Terraform_v2 (terraform repo)
 ```
 
-However, if a build server was available, we can escape the monorepo-centric co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
+However, if a build server was available, we can escape the monorepo-centric notions imposed by the co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
 
 ```bash
 .
@@ -130,8 +146,9 @@ However, if a build server was available, we can escape the monorepo-centric co-
 
 There are several benefits in maintaining the infrastructure code in a separate repo:
 1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via co-location, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur which is almost always unacceptable.
-2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be pinned against various tag versions in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
+2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be [pinned](https://www.terraform.io/language/modules/sources#selecting-a-revision) against various tag versions in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
 
+### Terraform code structure Overview
 A few methods of organising and deploying the Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your organisation.
 
 ##### [5 Common Terraform Patterns (Click embedded video below)](https://www.youtube.com/watch?v=wgzgVm7Sqlk)
@@ -201,26 +218,11 @@ This version is included to illustrate a method that is more DRY than v1. See `x
 ```
 
 
-#### The Serverless.yml does the following:
-See `serverless/exif-ripper/serverless.yml`
-1. Uses the Serverless deployment bucket created by Terraform
-2. Fetches ssm variables that have previously been pushed by the Terraform code: (source and destination buckets)
-3. Creates the trigger on the source bucket
-4. Creates the lambda function (using buckets created by Terraform)
-
-```bash
-.
-├── Serverless
-│   └── exif-ripper
-│       ├── config
-│       └── test_images
-```
-
 ## Deployment notes
 As s3 buckets must be unique, a random string is used so that multiple people can run the deployment in their own environments at any given time without error.
 
 
-## Usage
+## Practical Usage
 **All instructions are for Ubuntu 20.04 using BASH in a terminal, so your mileage may vary if using a different system.**
 Several scripts have been included to assist getting this solution deployed. Please treat these scripts as additional documentation and give them a read.
 
