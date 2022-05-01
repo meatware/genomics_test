@@ -13,7 +13,7 @@ To extend this further, we have two users User A and User B. Create IAM users wi
 
 ![Exif-ripper architecture](docs/exif_ripper.drawio.png)
 
-A natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream image processor. Indeed, a whole pipeline of lambda functions can used in the "chain of responsibilty pattern" if desired.
+A natural solution for this problem is to use AWS lambda because this service provides the ability to monitor an s3 bucket and trigger event based messages that can be sent to any arbitrary downstream image processor. Indeed, a whole pipeline of lambda functions can used in the "chain of responsibility pattern" if desired.
 
 ![Chain of responsibility](docs/Chained-Microservices-Design-Pattern.png)
 
@@ -32,23 +32,23 @@ functions:
             - suffix: .jpg
 ```
 
-The lambda Python3 code for exif-ripper is located in `serverless/exif-ripper/` and it leverages the following libraries to execute the folloowing workflow:
-1. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#s3): Read binary image file froom s3 into RAM.
+The lambda Python3 code for exif-ripper is located in `serverless/exif-ripper/` and it leverages the following libraries to execute the following workflow:
+1. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#s3): Read binary image file from s3 into RAM.
 2. [exif](https://pypi.org/project/exif/): Strips any exif data from image
 3. Use Boto3 again to write the sanitised file to the destination bucket.potential errors.
 
-### usage
+### Deployment tool overview
 The solution for this problem was solved using the following deployment tools:
 1. Terraform - To create common shared resources such as IAM entities & policies, security groups, sqs queues, S3 buckets, databases, etc
 2. Serverless (sls) - To deploy lambda functions - lambda functions, API Gateways, step functions, etc
 
-Sls is a better choice to deploy app-specific infratructure because the serverless.yml is tightly coupled to the app code and thus changes can be easily made in a few lines of code compared to the several pages required for Terraform. Additionally, it allows developers to easily modify the infrastructure without asking for DevOps help (as not everyone knows the Terraform DSL). However, It can be a bad idea to allow anyone with access to a Serverless.yml file to deploy whatever they like. Thus, shared-infrastructure that is more stateful is deployed solely by Terraform and ideally this paradigm would be enforced by appropriate IAM permissions. Methods to pass & share data betwwen the two frameworks include the following:
+Sls is a better choice to deploy app-specific infrastructure because the serverless.yml is tightly coupled to the app code and thus changes can be easily made in a few lines of code compared to the several pages required for Terraform. Additionally, it allows developers to easily modify the infrastructure without asking for DevOps help (as not everyone knows the Terraform DSL). However, It can be a bad idea to allow anyone with access to a Serverless.yml file to deploy whatever they like. Thus, shared-infrastructure that is more stateful is deployed solely by Terraform and ideally this paradigm would be enforced by appropriate IAM permissions. Methods to pass & share data between the two frameworks include the following:
 
-1. Using Tarraform data
+1. Using Terraform data
 2. Reading remote terraform state
-3. Writing and coonsuming variables from SSM
+3. Writing and consuming variables from SSM
 4. Using `terraform out` to write out output values to file
-5. Using AWS CLI to retrive data
+5. Using AWS CLI to retrieve data
 
 Note that options 3 & 4 are used in this example repo.
 
@@ -91,13 +91,13 @@ Exif-Ripper is a serverless application that attaches an event triggering lambda
         └── lambda_iam_role_and_policies
 ```
 
-The directory structure in this project colocates the infrastructure code with the dev code. An alternative method is accomplished via seperation of the infrastructure code from the dev code into 2 repos:
+The directory structure in this project co-locates the infrastructure code with the dev code. An alternative method is accomplished via separation of the infrastructure code from the dev code into 2 repos:
 
-1. genomics-test (conatinas dev serverless code)
+1. genomics-test (conatins dev serverless code)
 2. genomics-test-infra (contains only terraform code)
 
-**Pros and cons of colocation method:**
-The primary benefit of colocation of the terraform code within a serverless project is the ostensible ease of deploying the compressed serverless zip file from a single directory [./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). This makes sense in the context of this example project because there is a requirement to share an uncomplicated code base, and thus this simple method was chosen.
+**Pros and cons of co-location method:**
+The primary benefit of co-location of the terraform code within a serverless project is the ostensible ease of deploying the compressed serverless zip file from a single directory [./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). This makes sense in the context of this example project because there is a requirement to share an uncomplicated code base, and thus this simple method was chosen.
 
 ```bash
 .
@@ -107,7 +107,7 @@ The primary benefit of colocation of the terraform code within a serverless proj
     └── Terraform_v2 (terraform repo)
 ```
 
-However, if a build server was available, we can escape the mono-repo-centric colocation method because commands can be run outside of the context/restrictions of a single mono-repo/folder.
+However, if a build server was available, we can escape the monorepo-centric co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
 
 ```bash
 .
@@ -119,43 +119,43 @@ However, if a build server was available, we can escape the mono-repo-centric co
             └── test_images
 
 
-### Note infra repo is accesible at another location on the same build server
+### Note infra repo is accessible at another location on the same build server
 .
-├── /opt/all_terrfarm_cosumers
+├── /opt/all_terraform_consumers
     └── genomics-test-infra (terraform repo)
          └── terraform_v1
 
 ```
 
 
-There are several benefits in maintaining the infrastucture code in a separate repo:
-1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via colocation, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur which is almost always unacceptable.
+There are several benefits in maintaining the infrastructure code in a separate repo:
+1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via co-location, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur which is almost always unacceptable.
 2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be pinned against various tag versions in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
 
-A few methods of organising and deploying the Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your orgainisation.
+A few methods of organising and deploying the Terraform code are illustrated here. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your organisation.
 
-##### [5 Common Terraform Patterns (Click embeded video below)](https://www.youtube.com/watch?v=wgzgVm7Sqlk)
+##### [5 Common Terraform Patterns (Click embedded video below)](https://www.youtube.com/watch?v=wgzgVm7Sqlk)
 [![Evolving Your Infrastructure with Terraform" TEXT](./docs/evolving_terraform_thumb.png)](https://www.youtube.com/watch?v=wgzgVm7Sqlk "5 Common Terraform Patterns")
 
-Some of the pertinent questions with regards to how terraform code is structured are:
+Some of the pertinent questions with regards to how terraform code is structured are listed below, but a detailed discussion is beyond the scope of this document.
 
-1. Monolith or multi-repo structure?
-2.
-
-
+1. Monolith or multi-repo pattern?
+2. Local or remote state?
+3. Local and/or remote modules?
+4. Organisational IaC architecture that addresses seperation of concerns & scalability. DRY code and flexibility usually results in an increase in complexity the balance of which depends on the company's needs.
 
 
 1. `terraform_v1` - The simplest method
-    - Uses local modules that are nested in the root of `terraform_v1`
-    - Once the DEV environment is created, it can be copied and pasted to create UAT & DEV envs. Only a few values such as env value (`dev --> uat`) will have to be changed in the new env.
-    - A potential disadvantage of this method is that
+    - Uses a local state file so the terraform.tfstate file is saved to the local disk. In order the facilitate shared team editing, the state file is typically stored in git. This is a potential security concern as sensitive values can be exposed.
+    - Once the DEV environment is created, it can be copied and pasted to create UAT & DEV envs. Only a few values such as env value (`dev --> uat`) will have to be changed in the new env. However, the resulting code duplication can result in env-variant configuration drift and errors.
+    - Uses publicly available remote modules from the [Terraform registry])(https://registry.terraform.io/) for resources such as s3 to avoid reinventing the wheel.
+    - Uses local modules that are nested in the root of `terraform_v1`. This is a step in the right direction, but any modules defined here cannot be reused for other Terraform consumers. Furthermore, there is no module versioning and changes to these modules when testing DEV will be applicable to UAT & PROD. We can work around this by checking out specific branches in CI, but it is a clunky solution possessing suboptimal visibility.
+2. `terraform_v2` - A DRY method
+    - Uses a remote s3/dynamodb backend with remote state locking. Eases multi-user collaboration
+    - DRY: Leverages passing in tfvar variables via the `-var-file` CLI argument. A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
 
-v2 is a DRY method that also uses a remote s3/dynamodb backend
 
-
-
-1.
-#### Terraform_v1 does the illustrated
+#### Terraform_v1 components & workflow
 See `xxx_pipeline_create.sh`
 
 1. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
@@ -221,7 +221,7 @@ As s3 buckets must be unique, a random string is used so that multiple people ca
 
 
 ## Usage
-**All instructions are for Ubuntu 20.04 using BASH in a terminal, so your milage may vary if using a different system.**
+**All instructions are for Ubuntu 20.04 using BASH in a terminal, so your mileage may vary if using a different system.**
 Several scripts have been included to assist getting this solution deployed. Please treat these scripts as additional documentation and give them a read.
 
 #### Install NVM, Node & Serverless
@@ -237,7 +237,7 @@ cd -
 ```
 
 #### Please ensure you have exported your aws credentials into your shell
-This has been test-deployed into an R&D account using Admin credentials. Try to do the same or use an account with the perms to use lambda, s3, iam, dynamodb, and SSM (syatems manager) at the least.
+This has been test-deployed into an R&D account using Admin credentials. Try to do the same or use an account with the perms to use lambda, s3, iam, dynamodb, and SSM (systems manager) at the least.
 
 An Optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
 
@@ -253,6 +253,7 @@ source ~/.bashrc
 
 ```bash
 csp1
+colsw 72
 awskeys help
 awskeys list
 awskeys export $YOUR_AWS_PROFILE
@@ -289,7 +290,7 @@ cd -
 ### Test user permissions
 cd terraform_v1/02_DEV/
 ./000_extract_user_secrets_from_tfstate.sh
-cat ./append_these_perms_to_aws_credentials_file.secrets # <<! take contents of this and pasted into ~/.aws/credentials file
+cat ./append_these_perms_to_aws_credentials_file.secrets # <<! take contents of this and paste into ~/.aws/credentials file
 
 ### run user perm tests & check output
 ./001_test_user_bucket_access.sh
