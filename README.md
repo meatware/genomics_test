@@ -166,9 +166,9 @@ Some of the pertinent questions with regards to how terraform code is structured
     - Once the DEV environment is created, it can be copied and pasted to create UAT & DEV environments. Only a few values such as env value (e.g. `dev --> uat`) will have to be changed in the new env. However, the resulting code duplication can result in env-variant configuration drift and uncaught errors.
     - Uses publicly available remote modules from the [Terraform registry])(https://registry.terraform.io/) for resources such as s3 to avoid reinventing the wheel.
     - Uses local modules that are nested in the root of `terraform_v1`. This is a step in the right direction, but any modules defined here cannot be reused for other Terraform consumers. Furthermore, there is no module versioning and changes to these modules will be applicable to DEV, UAT & PROD. We can work around this by checking out specific branches in CI/CD in an env-specific manner, but this is a clunky solution that has suboptimal visibility.
-2. `terraform_v2` - [A DRY method])(https://github.com/meatware/genomics_test/blob/master/xxx_tfver2_pipeline_create.sh#L73-L76)
+2. `terraform_v2` - [A DRY method](https://github.com/meatware/genomics_test/blob/master/xxx_tfver2_pipeline_create.sh#L73-L76)
     - Uses a remote s3/dynamodb backend with remote state locking. Facilitates multi-user collaboration
-    - DRY: Leverages passing in tfvar variables (stored in the envs folder) via the `-var-file` CLI argument. e.g. `terraform init -backend-config=../../envs/${myenv}/${myenv}.backend.hcl`,  followed by `$terraform_exec apply -var-file=../../envs/${myenv}/${myenv}.tfvars` A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
+    - DRY: Leverages passing in tfvar variables (stored in the envs folder) via the `-var-file` CLI argument. e.g. `terraform init -backend-config=../../envs/${myenv}/${myenv}.backend.hcl`,  followed by `terraform apply -var-file=../../envs/${myenv}/${myenv}.tfvars` A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
     - Uses custom remote module written by yours truly to provision an IAM role with custom or managed policies. The remote module is versioned with release  tags and can be found here: https://github.com/meatware/tfmod-iam-role-with-policies.
 
 
@@ -203,8 +203,8 @@ This version is included to illustrate a method that is more DRY than v1. See `x
 4. Pushes the names of these buckets to SSM
 5. Creates a lambda role and policy using a [remote module](https://github.com/meatware/tfmod-iam-role-with-policies).
     - Uses tags so that consumers pin to a specific version of the upstream code
-    - Has scripts to automate README.md creation
-    - Has live examples that can be created and torn down to test any new code that will be merged into master
+    - Has [scripts](https://github.com/meatware/tfmod-iam-role-with-policies/blob/master/xxx_terraform-docs.sh) to automate README.md creation
+    - Has live examples that can be [created](https://github.com/meatware/tfmod-iam-role-with-policies/blob/master/xxx_tests_run_examples.sh) and [destroyed](https://github.com/meatware/tfmod-iam-role-with-policies/blob/master/xxx_tests_destroy_examples.sh) to test any new code that might be merged into master
 
 
 ```
@@ -320,4 +320,6 @@ cd -
 
 ### DESTROY STACK ONCE FINISHED
 ./xxx_tfver2_pipeline_destroy.sh $YOUR_TERRAFORM_EXEC $RANDOM_STRING
+
+### Note you will have to manually delete the remote state buckets!
 ```
