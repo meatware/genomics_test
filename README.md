@@ -97,14 +97,13 @@ See `Serverless/exif-ripper/Serverless.yml`
     ├── 00_setup_remote_s3_backend_dev
     ├── 00_setup_remote_s3_backend_prod
     ├── entrypoints
-    │   ├── exifripper_buckets
+    │   ├── exifripper_buckets_and_iam_role
     │   └── sls_deployment_bucket
     ├── envs
     │   ├── dev
     │   └── prod
     └── modules
-        ├── exif_ripper_buckets
-        └── lambda_iam_role_and_policies
+        └──exif_ripper_buckets
 ```
 
 The directory structure in this project co-locates the infrastructure code with the dev code. An alternative method is accomplished via separation of the infrastructure code from the dev code into 2 repos:
@@ -170,6 +169,7 @@ Some of the pertinent questions with regards to how terraform code is structured
 2. `terraform_v2` - [A DRY method])(https://github.com/meatware/genomics_test/blob/master/xxx_tfver2_pipeline_create.sh#L73-L76)
     - Uses a remote s3/dynamodb backend with remote state locking. Facilitates multi-user collaboration
     - DRY: Leverages passing in tfvar variables (stored in the envs folder) via the `-var-file` CLI argument. e.g. `terraform init -backend-config=../../envs/${myenv}/${myenv}.backend.hcl`,  followed by `$terraform_exec apply -var-file=../../envs/${myenv}/${myenv}.tfvars` A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
+    - Uses custom remote module written by yours truly to provision an IAM role with custom or managed policies. The remote module is versioned with release  tags and can be found here: https://github.com/meatware/tfmod-iam-role-with-policies.
 
 
 #### Terraform_v1 components & workflow
@@ -178,7 +178,7 @@ See `xxx_pipeline_create.sh`
 1. Creates a global Serverless deployment bucket which can be used by multiple apps. Multiple Serverless projects can be nested in this bucket. This is to avoid the multiple random Serverless buckets being scattered around the root of s3.
 2. Creates source & destination s3 buckets for exif image processing
 3. Pushes the names of these buckets to SSM
-4. Creates a lambda role and policy
+4. Creates a lambda role and policy using a custom remote module pinned to a specific tag
 5. Creates two users with RO and RW permissions to the buckets as specified in the brief
 6. Uses `Terraform output` to write the role arn & the deployment bucket name to the Serverless folder. Both these variables are used to bootstrap Serverless and thus cannot be retrieved from SSM.
 
@@ -201,22 +201,27 @@ This version is included to illustrate a method that is more DRY than v1. See `x
 2. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
 3. Creates source & destination s3 buckets for exif image processing
 4. Pushes the names of these buckets to SSM
-5. Creates a lambda role and policy
+5. Creates a lambda role and policy using a [remote module](https://github.com/meatware/tfmod-iam-role-with-policies).
+    - Uses tags so that consumers pin to a specific version of the upstream code
+    - Has scripts to automate README.md creation
+    - Has live examples that can be created and torn down to test any new code that will be merged into master
+
 
 ```
 .
 ├── 00_setup_remote_s3_backend_dev
 ├── 00_setup_remote_s3_backend_prod
 ├── entrypoints
-│   ├── exifripper_buckets
+│   ├── exifripper_buckets_and_iam_role
 │   └── sls_deployment_bucket
 ├── envs
 │   ├── dev
 │   └── prod
 └── modules
-    ├── exif_ripper_buckets
-    └── lambda_iam_role_and_policies
+    └── exif_ripper_buckets
 ```
+
+
 
 
 ## Deployment notes
@@ -287,16 +292,19 @@ rm -f terraform_1.0.6_linux_amd64.zip
 
 ### Test Serverless function
 cd Serverless/exif-ripper
-./00_test_upload_image_2_s3_source.sh default
+    ./00_test_upload_image_2_s3_source.sh default
+
+    ### Note you can tail serverless logs using
+    serverless logs -f exif -t
 cd -
 
 ### Test user permissions
 cd terraform_v1/02_DEV/
-./000_extract_user_secrets_from_tfstate.sh
-cat ./append_these_perms_to_aws_credentials_file.secrets # <<! take contents of this and paste into ~/.aws/credentials file
+    ./000_extract_user_secrets_from_tfstate.sh
+    cat ./append_these_perms_to_aws_credentials_file.secrets # <<! take contents of this and paste into ~/.aws/credentials file
 
-### run user perm tests & check output
-./001_test_user_bucket_access.sh
+    ### run user perm tests & check output
+    ./001_test_user_bucket_access.sh
 cd -
 
 ### DESTROY STACK ONCE FINISHED

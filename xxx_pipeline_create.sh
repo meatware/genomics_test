@@ -41,10 +41,15 @@ echo "creating dev stack now..."
 ## 1
 cd terraform_v1/01_sls_deployment_bucket
 
-rm -rf .terraform .terraform.lock.hcl \
-    && $terraform_exec init \
-    && $terraform_exec validate \
-    && $terraform_exec apply -var random_string=$random_string -auto-approve
+    rm -rf .terraform .terraform.lock.hcl
+    $terraform_exec init
+
+    $terraform_exec validate
+
+    $terraform_exec apply \
+        -var random_string=$random_string \
+        -auto-approve \
+        -input=false
 
     terraform_v1.0.6 output | awk '{print $3}' | sed 's|"||g' \
         > ../../serverless/exif-ripper/sls_deply_buck.output
@@ -53,10 +58,15 @@ cd -
 ## 2
 cd terraform_v1/02_DEV
 
-rm -rf .terraform .terraform.lock.hcl \
-    && $terraform_exec init \
-    && $terraform_exec validate \
-    && $terraform_exec apply -var random_string=$random_string -auto-approve
+    rm -rf .terraform .terraform.lock.hcl
+    $terraform_exec init
+
+    $terraform_exec validate
+
+    $terraform_exec apply \
+        -var random_string=$random_string \
+        -auto-approve \
+        -input=false
 
     terraform_v1.0.6 output | awk '{print $3}' | grep role | sed 's|"||g' \
         > ../../serverless/exif-ripper/role_arn.output
