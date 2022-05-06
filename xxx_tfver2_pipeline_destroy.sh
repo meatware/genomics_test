@@ -40,22 +40,38 @@ echo "destroying dev & prod backends  now..."
 for myenv in "dev" "prod"; do
 
     ## 1
-    cd terraform_v2/entrypoints/exifripper_buckets
+    cd terraform_v2/entrypoints/exifripper_buckets_and_iam_role
 
-        rm -rf .terraform .terraform.lock.hcl \
-            && $terraform_exec init -input=false -backend-config=../../envs/${myenv}/${myenv}.backend.hcl \
-            && $terraform_exec validate \
-            && $terraform_exec destroy -var-file=../../envs/${myenv}/${myenv}.tfvars -var random_string=$random_string -auto-approve -input=false
+        rm -rf .terraform .terraform.lock.hcl
+        $terraform_exec init \
+            -input=false \
+            -backend-config=../../envs/${myenv}/${myenv}.backend.hcl
+
+        $terraform_exec validate
+
+        $terraform_exec destroy \
+            -var-file=../../envs/${myenv}/${myenv}.tfvars \
+            -var random_string=$random_string \
+            -auto-approve \
+            -input=false
 
     cd -
 
     ## 2
     cd terraform_v2/entrypoints/sls_deployment_bucket
 
-        rm -rf .terraform .terraform.lock.hcl \
-            && $terraform_exec init -input=false -backend-config=../../envs/${myenv}/${myenv}.backend.hcl \
-            && $terraform_exec validate \
-            && $terraform_exec destroy -var-file=../../envs/${myenv}/${myenv}.tfvars -var random_string=$random_string -auto-approve -input=false
+        rm -rf .terraform .terraform.lock.hcl
+        $terraform_exec init \
+            -input=false \
+            -backend-config=../../envs/${myenv}/${myenv}.backend.hcl
+
+        $terraform_exec validate
+
+        $terraform_exec destroy \
+            -var-file=../../envs/${myenv}/${myenv}.tfvars \
+            -var random_string=$random_string \
+            -auto-approve \
+            -input=false
 
     cd -
 
@@ -63,15 +79,31 @@ done
 
 
 ## 3. destroy remote backend
-for myenv in "dev" "prod"; do
-    cd terraform_v2/00_setup_remote_s3_backend_${myenv}
+echo -e "Chicken & egg: Please destroy s3 remote state buckets manually using commented out code at end of this script."
+# for myenv in "dev" "prod"; do
+#     cd terraform_v2/00_setup_remote_s3_backend_${myenv}
 
-        rm -rf .terraform .terraform.lock.hcl \
-            && $terraform_exec init -input=false  \
-            && $terraform_exec validate \
-            && $terraform_exec apply -target module.terraform_state_backend -var random_string=$random_string -var terraform_backend_config_file_path="" -auto-approve -input=false
+#         rm -rf .terraform .terraform.lock.hcl
+#         $terraform_exec init \
+#             -input=false
 
-        $terraform_exec init -input=false -force-copy
-        $terraform_exec destroy -var random_string=$random_string -var terraform_backend_config_file_path="" -auto-approve -input=false
-    cd -
-done
+#         $terraform_exec validate
+
+#         $terraform_exec apply \
+#             -target module.terraform_state_backend \
+#             -var random_string=$random_string \
+#             -var terraform_backend_config_file_path="" \
+#             -auto-approve \
+#             -input=false
+
+#         $terraform_exec init \
+#             -input=false \
+#             -force-copy
+
+#         $terraform_exec destroy \
+#             -var random_string=$random_string \
+#             -var terraform_backend_config_file_path="" \
+#             -auto-approve \
+#             -input=false
+#     cd -
+# done

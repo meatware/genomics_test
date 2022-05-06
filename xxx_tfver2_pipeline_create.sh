@@ -41,10 +41,13 @@ echo "creating dev & prod backends  now..."
 for myenv in "dev" "prod" ; do
     cd terraform_v2/00_setup_remote_s3_backend_${myenv}
 
-        rm -rf .terraform .terraform.lock.hcl \
-            && $terraform_exec init -input=false \
-            && $terraform_exec validate \
-            && $terraform_exec apply -input=false -var random_string=$random_string -auto-approve
+        rm -rf .terraform .terraform.lock.hcl
+        $terraform_exec init -input=false
+        $terraform_exec validate
+        $terraform_exec apply \
+            -input=false \
+            -var random_string=$random_string \
+            -auto-approve
 
         rm -fv ${myenv}.backend.hcl
         for be_key in "region" "bucket" "dynamodb_table"; do
@@ -68,20 +71,36 @@ for myenv in "dev" "prod"; do
     ## 1
     cd terraform_v2/entrypoints/sls_deployment_bucket
 
-    rm -rf .terraform .terraform.lock.hcl \
-        && $terraform_exec init -input=false -backend-config=../../envs/${myenv}/${myenv}.backend.hcl \
-        && $terraform_exec validate \
-        && $terraform_exec apply -var-file=../../envs/${myenv}/${myenv}.tfvars -var random_string=$random_string -auto-approve -input=false
+    rm -rf .terraform .terraform.lock.hcl
+    $terraform_exec init \
+        -input=false \
+        -backend-config=../../envs/${myenv}/${myenv}.backend.hcl
+
+    $terraform_exec validate
+
+    $terraform_exec apply \
+        -var-file=../../envs/${myenv}/${myenv}.tfvars \
+        -var random_string=$random_string \
+        -auto-approve \
+        -input=false
 
     cd -
 
     ## 2
-    cd terraform_v2/entrypoints/exifripper_buckets
+    cd terraform_v2/entrypoints/exifripper_buckets_and_iam_role
 
-    rm -rf .terraform .terraform.lock.hcl \
-        && $terraform_exec init -input=false -backend-config=../../envs/${myenv}/${myenv}.backend.hcl \
-        && $terraform_exec validate \
-        && $terraform_exec apply -var-file=../../envs/${myenv}/${myenv}.tfvars -var random_string=$random_string -auto-approve -input=false
+    rm -rf .terraform .terraform.lock.hcl
+    $terraform_exec init \
+        -input=false \
+        -backend-config=../../envs/${myenv}/${myenv}.backend.hcl
+
+    $terraform_exec validate
+
+    $terraform_exec apply \
+        -var-file=../../envs/${myenv}/${myenv}.tfvars \
+        -var random_string=$random_string \
+        -auto-approve \
+        -input=false
 
     cd -
 
