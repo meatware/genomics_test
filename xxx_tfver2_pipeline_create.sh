@@ -35,8 +35,6 @@ terraform_exec=$1
 random_string=$2
 
 
-
-
 echo "creating dev & prod backends  now..."
 ### Run terraform
 ## 0. setup remote backend

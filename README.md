@@ -35,7 +35,7 @@ functions:
 The lambda Python3 code for exif-ripper is located in `Serverless/exif-ripper/` and it leverages the following libraries to execute the following workflow:
 1. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#s3): Read binary image file from s3 into RAM.
 2. [exif](https://pypi.org/project/exif/): Strips any exif data from image
-3. Use Boto3 again to write the sanitised file to the destination bucket.potential errors.
+3. Use Boto3 again to write the sanitised file to the destination bucket.
 
 ### Deployment tool overview
 The solution for this problem was solved using the following deployment tools:
@@ -60,7 +60,7 @@ Further reading:
 
 
 ### Serverless Function Overview
-Exif-Ripper is a Serverless application that attaches an event triggering lambda that monitors a source s3 bucket for the upload of jpg files. When this happens an AWS event invokes another lambda function written in python which strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. The lambda function reads & processes the image directly in memory, and thus does not incur write time-penalties by writing the file to scratch.
+Exif-Ripper is a Serverless application that creates an event triggering lambda that monitors a source s3 bucket for the upload of jpg files. When this occurs, an AWS event invokes another (python3) lambda function that strips the exif data from the jpg and writes the "sanitised" jpg to a destination bucket. This lambda function also reads & processes the image directly in memory, and thus does not incur write time-penalties by writing the file to scratch.
 
 #### The Serverless.yml does the following:
 See `Serverless/exif-ripper/Serverless.yml`
@@ -71,14 +71,14 @@ See `Serverless/exif-ripper/Serverless.yml`
 
 ```
 .
-├── Serverless
-│   └── exif-ripper
-│       ├── config
-│       └── test_images
+└── Serverless
+    └── exif-ripper
+        ├── config
+        └── test_images
 ```
 
 
-#### Monorepo Directory structure
+#### Co-located Monorepo Directory Structure
 ```
 .
 ├── Serverless
@@ -113,21 +113,21 @@ The directory structure in this project co-locates the infrastructure code with 
 2. genomics-test-infra (contains only terraform code)
 
 **Pros and cons of co-location method:**
-The primary benefit of co-location of the terraform code within a Serverless project is the ostensible ease of deploying the compressed Serverless zip file from a single directory [./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). This makes sense in the context of this example project because there is a requirement to share an uncomplicated code base, and thus this simple method was chosen.
+The primary benefit of co-location of the terraform code within a Serverless project is the ostensible ease of deploying the compressed Serverless zip file from a single directory. [ See ./xxx_pipeline_create.sh](./xxx_pipeline_create.sh). This makes sense in the context of this example project because there is a requirement to share an uncomplicated code base.
 
 ```
 .
-├── genomics-test
+└── genomics-test
     ├── Serverless (code repo)
     ├── Terraform_v1 (terraform repo)
     └── Terraform_v2 (terraform repo)
 ```
 
-However, if a build server was available, we can escape monorepo-centric notions imposed by the co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder.
+However, if a build server was available, we can escape monorepo-centric notions imposed by the co-location method because commands can be run outside of the context/restrictions of a single monorepo/folder. e.g:
 
 ```bash
 .
-├── build_agent_dir
+└── build_agent_dir
     ├── genomics-test  (code repo)
         ├── Serverless
         └── exif-ripper
@@ -137,7 +137,7 @@ However, if a build server was available, we can escape monorepo-centric notions
 
 ### Note infra repo is accessible at another location on the same build server
 .
-├── /opt/all_terraform_consumers
+└── /opt/all_terraform_consumers
     └── genomics-test-infra (terraform repo)
          └── terraform_v1
 
@@ -146,7 +146,7 @@ However, if a build server was available, we can escape monorepo-centric notions
 
 There are several benefits in maintaining the infrastructure code in a separate repo:
 1. Increased DevOps agility: Application code is subject to a lengthy build & test process during which an artifact is typically created before it can be deployed. If the Terraform code is tightly coupled to the app code via co-location, then even trivial IaC changes such as changing a tag will result in a long delay before (re)deployment can occur. This is almost always unacceptable.
-2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be [pinned](https://www.terraform.io/language/modules/sources#selecting-a-revision) against various tagged commits in the modules's master branch; or even be pinned against a particular branch or arbitrary commit hash.
+2. Dev code repos generally have a more complicated git [branching strategy/structure](https://www.flagship.io/git-branching-strategies/). e.g. GitFlow typically has master, develop, feature, release and hotfix branches. Such complexity is usually unsuitable for terraform IaC which typically only requires master and feature branches because terraform IaC can be designed to consume remote modules. As each remote module inhabits it's own git repo, terraform consumers can be [pinned](https://www.terraform.io/language/modules/sources#selecting-a-revision) against any tagged commit in the modules's master branch; or even be pinned against another branch or indeed, any arbitrary commit hash.
 
 ### Terraform code structure Overview
 A few patterns of organising and deploying Terraform code are illustrated in this repo's example code. This is a large topic and there is no "one" right answer as it depends on the needs and scale of your organisation.
@@ -162,14 +162,14 @@ A few patterns of organising and deploying Terraform code are illustrated in thi
 
 Some of the pertinent questions with regards to how terraform code is structured are listed below, but a detailed discussion is beyond the scope of this document.
 
-1. `terraform_v1` - The simplest method
+1. `terraform_v1` - [The simplest method](https://github.com/meatware/genomics_test/blob/master/xxx_pipeline_create.sh#L44-L47)
     - Uses a local state file so the terraform.tfstate file is saved to the local disk. In order to facilitate shared team editing, the state file is typically stored in git. This is a potential security concern as sensitive values can be exposed.
     - Once the DEV environment is created, it can be copied and pasted to create UAT & DEV environments. Only a few values such as env value (e.g. `dev --> uat`) will have to be changed in the new env. However, the resulting code duplication can result in env-variant configuration drift and uncaught errors.
     - Uses publicly available remote modules from the [Terraform registry])(https://registry.terraform.io/) for resources such as s3 to avoid reinventing the wheel.
-    - Uses local modules that are nested in the root of `terraform_v1`. This is a step in the right direction, but any modules defined here cannot be reused for other Terraform consumers. Furthermore, there is no module versioning and changes to these modules will be applicable to DEV, UAT & PROD. We can work around this by checking out specific branches in CI/CD, but this is a clunky solution that has suboptimal visibility.
-2. `terraform_v2` - A DRY method
-    - Uses a remote s3/dynamodb backend with remote state locking. Eases multi-user collaboration
-    - DRY: Leverages passing in tfvar variables (stored in the envs folder) via the `-var-file` CLI argument. A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
+    - Uses local modules that are nested in the root of `terraform_v1`. This is a step in the right direction, but any modules defined here cannot be reused for other Terraform consumers. Furthermore, there is no module versioning and changes to these modules will be applicable to DEV, UAT & PROD. We can work around this by checking out specific branches in CI/CD in an env-specific manner, but this is a clunky solution that has suboptimal visibility.
+2. `terraform_v2` - [A DRY method])(https://github.com/meatware/genomics_test/blob/master/xxx_tfver2_pipeline_create.sh#L73-L76)
+    - Uses a remote s3/dynamodb backend with remote state locking. Facilitates multi-user collaboration
+    - DRY: Leverages passing in tfvar variables (stored in the envs folder) via the `-var-file` CLI argument. e.g. `terraform init -backend-config=../../envs/${myenv}/${myenv}.backend.hcl`,  followed by `$terraform_exec apply -var-file=../../envs/${myenv}/${myenv}.tfvars` A disadvantage is complexity increase and potential accidental deployment to the wrong environment if deploying from the CLI. Usually not such a big problem because CI/CD is used to deploy. However, something to watch out for.
 
 
 #### Terraform_v1 components & workflow
@@ -195,6 +195,7 @@ See `xxx_pipeline_create.sh`
 ```
 
 #### Terraform_v2 does the following:
+**(Please ensure any infra created by v1 is destroyed before deploying v2!)**
 This version is included to illustrate a method that is more DRY than v1. See `xxx_tfver2_pipeline_create.sh`
 1. Creates a global s3/dynamodb backend and writes the backend config files to envs folder (`00_setup_remote_s3_backend_{dev,prod}`)
 2. Creates Serverless deployment bucket. Multiple Serverless projects can be nested in this bucket. This is to avoid the mess of multiple random Serverless buckets being scattered around the root of s3.
@@ -223,8 +224,8 @@ As s3 buckets must be unique, a random string is used so that multiple people ca
 
 
 ## Practical Usage
-**All instructions are for Ubuntu 20.04 using BASH in a terminal, so your mileage may vary if using a different system.**
-Several scripts have been included to assist getting this solution deployed. Please treat these scripts as additional documentation and give them a read.
+**All instructions are for Ubuntu 20.04 using BASH in a terminal, so your mileage may vary if using a different system.
+Several scripts have been included to assist getting this solution deployed. Please treat these scripts as additional documentation and give them a read.**
 
 #### Install NVM, Node & Serverless
 
@@ -241,7 +242,7 @@ cd -
 #### Please ensure you have exported your aws credentials into your shell
 This has been test-deployed into an R&D account using Admin credentials. Try to do the same or use an account with the perms to use lambda, s3, iam, dynamodb, and SSM (systems manager) at the least.
 
-An Optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
+An optional method to get a great bash experience via https://github.com/meatware/sys_bashrc
 
 ```bash
 cd
