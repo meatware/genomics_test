@@ -288,11 +288,11 @@ rm -f terraform_1.0.6_linux_amd64.zip
 #### Terraform_v1 with Serverless application and users (just dev)
 ```bash
 ### Create stack From repo root
-./xxx_pipeline_create.sh terraform_v1.0.6 $YOUR_TERRAFORM_EXEC $RANDOM_STRING
+./xxx_pipeline_create.sh $YOUR_TERRAFORM_EXEC $RANDOM_STRING
 
 ### Test Serverless function
 cd Serverless/exif-ripper
-    ./00_test_upload_image_2_s3_source.sh default
+    ./00_test_upload_image_2_s3_source.sh $YOUR_AWS_PROFILE
 
     ### Note you can tail serverless logs using
     serverless logs -f exif -t
